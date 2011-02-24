@@ -1,0 +1,179 @@
+
+
+///////////////////////////////////////////
+// II Memory Instructions 
+///////////////////////////////////////////
+macro SetWord(BASE_ADDR,data) = M[BASE_ADDR] = data
+macro GetWord(BASE_ADDR) = M[BASE_ADDR] 
+macro SetHalfWord(BASE_ADDR,data) = M[BASE_ADDR] = data
+macro GetHalfWord(BASE_ADDR) = M[BASE_ADDR]
+
+
+
+macro LDRB(rd) = \
+		TMP_EA = TMP_REG2;\
+		if (rd == 15) && (M[TMP_EA] == 0) then\
+		GPR[0] = (2 << 16) + 38;\
+		endif;\
+		Set_ARM_GPR(rd,M[TMP_EA]);\
+		if (TMP_EA == 0xFFF004C) then\
+			SetWord(TMP_EA,0x00000000);\
+		endif;\
+		if (TMP_EA == 0xFFE0020) then\
+			SetWord(TMP_EA,0x00000000);\
+		endif;
+
+
+macro LDR(rd) = \
+		TMP_EA = TMP_REG2;\
+		TMP_SWORD = GetWord(TMP_EA);\
+		if (rd == 15) && (TMP_SWORD == 0) then\
+		GPR[0] = (2 << 16) + 38;\
+		endif;\
+		Set_ARM_GPR(rd,TMP_SWORD);\
+		if (TMP_EA == 0xFFF004C) then\	
+			SetWord(TMP_EA,0x00000000);\
+		endif;\
+		if (TMP_EA == 0xFFE0020) then\	
+			SetWord(TMP_EA,0x00000000);\
+		endif;
+
+
+macro STRB() = \
+		TMP_EA = TMP_REG2;\
+		M[TMP_EA] = TMP_REG1;
+
+macro STR() = \
+		TMP_EA = TMP_REG2;\
+		TMP_SWORD = TMP_REG1;\
+		SetWord(TMP_EA,TMP_SWORD);
+
+///////////////////////////////////////////
+// II.1.1 Miscellaneous Loads/Stores
+///////////////////////////////////////////	
+ 
+
+
+macro STRH() = \
+		TMP_EA = TMP_REG2;\
+		SetHalfWord(TMP_EA,TMP_REG1);
+
+macro LDRH() = \
+		TMP_EA = TMP_REG2;\
+		if TMP_EA<0..0> == 0 then \
+			TMP_HALF = GetHalfWord(TMP_EA);\
+		else\
+			TMP_HALF = 0;\
+		// not aligned UNPREDICTABLE
+		endif;\
+		TMP_REG1 = TMP_HALF;\
+		if (rd == 15) && (TMP_REG1 == 0) then\
+			GPR[0] = (2 << 16) + 38;\
+		endif;\
+		Set_ARM_GPR(rd,TMP_REG1);
+
+macro LDRSB() = \
+      TMP_EA = TMP_REG2;\
+      TMP_BYTE = M[TMP_EA];\
+      if TMP_BYTE<7..7> == 1 then\
+         TMP_REG1 = 0xFFFFFFFF;\
+         TMP_REG1<7..0> = TMP_BYTE;\
+      else\
+        TMP_REG1 = TMP_BYTE;\
+      endif;\
+      TMP_REG1<7..0> = TMP_BYTE;\
+      if (rd == 15) && (TMP_REG1 == 0) then\
+         GPR[0] = (2 << 16) + 38;\
+      endif;\
+      Set_ARM_GPR(rd,TMP_REG1);\
+
+macro LDRSH() = \
+      TMP_EA = TMP_REG2;\
+      if TMP_EA<0..0> == 0 then \
+          TMP_HALF = GetHalfWord(TMP_EA);\
+      else\
+          TMP_HALF = 0;\
+	  // not aligned UNPREDICTABLE
+      endif;\
+      if TMP_HALF<15..15> == 1 then\
+         TMP_REG1 = 0xFFFFFFFF;\
+	 TMP_REG1<15..0> = TMP_HALF;\
+      else\
+         TMP_REG1 = TMP_HALF;\
+      endif;\
+      if (rd == 15) && (TMP_REG1 == 0) then\
+         GPR[0] = (2 << 16) + 38;\
+      endif;\
+      Set_ARM_GPR(rd,TMP_REG1);
+
+
+
+///////////////////////////////////////////
+// Multiply Instructions
+///////////////////////////////////////////
+
+macro UGet_ARM_GPR(r) = coerce(u32, Get_ARM_GPR(r))
+
+///////////////////////////////////////////
+// V Semaphore Instructions
+///////////////////////////////////////////
+
+macro  SWPB(rn,rd,rm) = \
+	TMP_EA = Get_ARM_GPR(rn);\
+	TMP_BYTE = M[TMP_EA];\
+	M[TMP_EA] = Get_ARM_GPR(rm);\
+	Set_ARM_GPR(rd,TMP_BYTE);
+
+macro  SWPW(rn,rd,rm) = \
+	TMP_EA = Get_ARM_GPR(rn);\
+	TMP_REGSWORD = GetWord(TMP_EA);\
+	if (TMP_EA<1..0> == 0b00) then\
+		TMP_SWORD = TMP_REGSWORD;\
+	else\
+		if (TMP_EA<1..0> == 0b01) then\
+			TMP_SWORD = TMP_REGSWORD >>> 8;\
+		else\
+			if (TMP_EA<1..0> == 0b10) then\
+				TMP_SWORD = TMP_REGSWORD >>> 16;\
+			else\
+				if (TMP_EA<1..0> == 0b11) then\
+					TMP_SWORD = TMP_REGSWORD >>> 24;\
+				endif;\
+			endif;\
+		endif;\	
+	endif;\
+	TMP_REG3 = Get_ARM_GPR(rm);\
+	SetWord(TMP_EA,TMP_REG3);\
+	Set_ARM_GPR(rd,TMP_SWORD);
+
+
+///////////////////////////////////////////
+// Status register access instructions
+//
+// IV Miscellaneous Instructions (CPSR/SPSR)
+///////////////////////////////////////////
+
+///////////////////////////////////////////
+//Set a value to the current spsr
+/////////////////////////////////
+macro SetSPSR(reg) = \
+	if (MBITS == mode_supervisor) then\
+		    Uspsr[0]=reg; \
+	else\
+		if (MBITS == mode_abort) then\
+			    Uspsr[1]=reg; \
+		else\
+			if (MBITS == mode_undefined) then\
+				    Uspsr[2]=reg; \
+			else\
+				if (MBITS == mode_IRQ) then\
+					    Uspsr[3]=reg; \
+				else\
+					if (MBITS == mode_FIQ) then\
+						    Uspsr[4]=reg; \
+					endif;\
+				endif;\
+			endif;\
+		endif;\
+	endif
+

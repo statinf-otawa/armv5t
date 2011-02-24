@@ -1,0 +1,1341 @@
+
+
+///////////////////////////////////
+//R bit (for CPSR/SPSR Instructions)
+///////////////////////////////////
+
+
+op setRon()
+	syntax = "SPSR"
+	image = "1"
+	action = {
+		RBIT = 1;
+	}
+
+op setRoff()
+	syntax = "CPSR"
+	image = "0"
+	action = {
+		RBIT = 0;
+	}
+
+///////////////////////////////////
+//S bit 
+///////////////////////////////////
+op setSon()
+	syntax = "S"
+	image = "1"
+	action = {
+		SBIT = 1;
+	}
+
+op setSoff()
+	syntax = ""
+	image = "0"
+	action = {
+		SBIT = 0;
+	}
+
+
+///////////////////////////////////
+//S bit for LDM/STM
+///////////////////////////////////
+op setMS = setMSon | setMSoff
+
+op setMSon()
+	syntax = "^"
+	image = "1"
+	action = {
+		MSBIT = 1;
+	}
+
+op setMSoff()
+	syntax = ""
+	image = "0"
+	action = {
+		MSBIT = 0;
+	}
+
+
+///////////////////////////////////
+//P bit for Load/Store instruction
+///////////////////////////////////
+op setP = setPon | setPoff
+op setPon()
+	syntax = ""
+	image = "1"
+	action = {
+		PBIT = 1;
+	}
+
+op setPoff()
+	syntax = ""
+	image = "0"
+	action = {
+		PBIT = 0;
+	}
+
+///////////////////////////////////
+//I bit for Load/Store instruction
+///////////////////////////////////
+op setI = setIon | setIoff
+
+op setIon()
+	syntax = ""
+	image = "1"
+	action = {
+		IBIT = 1;
+	}
+
+op setIoff()
+	syntax = ""
+	image = "0"
+	action = {
+		IBIT = 0;
+	}
+
+///////////////////////////////////
+//U bit for Load/Store instruction
+///////////////////////////////////
+op setU = setUon | setUoff
+
+op setUon()
+	syntax = ""
+	image = "1"
+	action = {
+		UBIT = 1;
+	}
+
+op setUoff()
+	syntax = ""
+	image = "0"
+	action = {
+		UBIT = 0;
+	}
+
+
+
+
+///////////////////////////////////
+//W bit for Load/Store instruction
+///////////////////////////////////
+op setW = setWon | setWoff
+
+op setWon()
+	syntax = "!"
+	image = "1"
+	action = {
+		WBIT = 1;
+	}
+
+op setWoff()
+	syntax = ""
+	image = "0"
+	action = {
+		WBIT = 0;
+	}
+
+op setLMem = setLMemon | setLMemoff
+
+op setLMemon()
+	syntax = "LD"
+	image = "1"
+	action = {
+		LBIT = 1;
+	}
+
+op setLMemoff()
+	syntax = "ST"
+	image = "0"
+	action = {
+		LBIT = 0;
+	}
+
+op setL = setLon | setLoff
+
+op setLon()
+	syntax = "L"
+	image = "1"
+	action = {
+		LBIT = 1;
+	}
+
+op setLoff()
+	syntax = ""
+	image = "0"
+	action = {
+		LBIT = 0;
+	}
+
+op setH = setHon | setHoff
+
+op setHon()
+	syntax = ""
+	image = "1"
+	action = {
+		HBIT = 1;
+	}
+
+op setHoff()
+	syntax = ""
+	image = "0"
+	action = {
+		HBIT = 0;
+	}
+
+
+
+
+
+
+
+
+///////////////////////////////////////////
+// Addressing Mode for Load/Store Multiple
+// ARM can handle 4 kind of stack. These modes
+// represent the different adressing mode for stacks.
+///////////////////////////////////////////
+
+reg IAMODE[1,u1]
+reg IBMODE[1,u1]
+reg DAMODE[1,u1]
+reg DBMODE[1,u1]
+
+
+///////////////////////////////////////////
+// STMIA/LDMIA
+///////////////////////////////////////////
+mode ia()
+     syntax = "IA"
+     image = "01"
+     action = {
+	    IAMODE = 1;
+	    IBMODE = 0;
+	    DAMODE = 0;
+	    DBMODE = 0;
+	    }
+
+///////////////////////////////////////////
+// STMIB/LDMIB
+///////////////////////////////////////////
+mode ib()
+     syntax = "IB"
+     image = "11"
+     action = {
+	    IAMODE = 0;
+	    IBMODE = 1;
+	    DAMODE = 0;
+	    DBMODE = 0;
+	    }
+
+///////////////////////////////////////////
+// STMDA/LDMDA
+///////////////////////////////////////////
+mode da()
+     syntax = "DA"
+     image = "00"
+     action = {
+	    IAMODE = 0;
+	    IBMODE = 0;
+	    DAMODE = 1;
+	    DBMODE = 0;
+	    }
+
+///////////////////////////////////////////
+// STMDB/LDMDB
+///////////////////////////////////////////
+mode db()
+     syntax = "DB"
+     image = "10"
+     action = {
+	    IAMODE = 0;
+	    IBMODE = 0;
+	    DAMODE = 0;
+	    DBMODE = 1;
+	    }
+
+mode addressing_mode = ia | ib | da | db
+
+
+///////////////////////////////////////////
+// Field Mask for CPSR/SPSR Instructions
+///////////////////////////////////////////
+
+op fm_f()
+	syntax = "f" 
+	image  = "1000"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 0;
+		PSRXMODE = 0;
+		PSRCMODE = 0;
+		}
+
+op fm_s()
+	syntax = "s" 
+	image  = "0100"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 1;
+		PSRXMODE = 0;
+		PSRCMODE = 0;
+		}
+
+op fm_x()
+	syntax = "x" 
+	image  = "0010"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 0;
+		PSRXMODE = 1;
+		PSRCMODE = 0;
+		}
+
+op fm_c()
+	syntax = "c" 
+	image  = "0001"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 0;
+		PSRXMODE = 0;
+		PSRCMODE = 1;
+		}
+
+
+op fm_fs()
+	syntax = "fs" 
+	image  = "1100"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 1;
+		PSRXMODE = 0;
+		PSRCMODE = 0;
+		}
+
+op fm_fx()
+	syntax = "fx" 
+	image  = "1010"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 0;
+		PSRXMODE = 1;
+		PSRCMODE = 0;
+		}
+
+op fm_fc()
+	syntax = "f" 
+	image  = "1001"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 0;
+		PSRXMODE = 0;
+		PSRCMODE = 1;
+		}
+
+
+op fm_sx()
+	syntax = "sx" 
+	image  = "0110"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 1;
+		PSRXMODE = 1;
+		PSRCMODE = 0;
+		}
+
+op fm_sc()
+	syntax = "sc" 
+	image  = "0101"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 1;
+		PSRXMODE = 0;
+		PSRCMODE = 1;
+		}
+
+op fm_xc()
+	syntax = "xc" 
+	image  = "0011"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 0;
+		PSRXMODE = 1;
+		PSRCMODE = 1;
+		}
+
+op fm_fsx()
+	syntax = "fsx" 
+	image  = "1110"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 1;
+		PSRXMODE = 1;
+		PSRCMODE = 0;
+		}
+
+op fm_fxc()
+	syntax = "fxc" 
+	image  = "1011"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 0;
+		PSRXMODE = 1;
+		PSRCMODE = 1;
+		}
+
+op fm_sxc()
+	syntax = "sxc"
+	image = "0111"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 1;
+		PSRXMODE = 1;
+		PSRCMODE = 1;
+		}
+
+op fm_fsxc()
+	syntax = "fsxc"
+	image = "1111"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 1;
+		PSRXMODE = 1;
+		PSRCMODE = 1;
+		}
+
+op fm_nob()
+	syntax = ""
+	image = "0000"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 0;
+		PSRXMODE = 0;
+		PSRCMODE = 0;
+		}
+
+mode field_mask = fm_f | fm_s | fm_x | fm_c | fm_fs | fm_fx | fm_fc | fm_sx | fm_sc | fm_xc | fm_fsx | fm_fxc | fm_sxc | fm_fsxc | fm_nob
+
+
+
+
+
+///////////////////////////////////////////
+// 24bits Immediate values doesnt need to be computed
+///////////////////////////////////////////
+mode IMM24(n: u24) = n
+	syntax = format("%d", n << 2)
+	image  = format("%24b", n)
+
+
+	 
+
+ //if(setl) then 'L' else '' endif
+///////////////////////////////////////////
+// Branch instruction, conditional if L bit is set
+///////////////////////////////////////////
+op B_Cond(cond : condition, setl : u1, signed_immed_24 : IMM24)
+	syntax = format("B%s%s %s",'L', cond.syntax,signed_immed_24.syntax) 
+	image = format("%s101%1b%s", cond.image, setl, signed_immed_24.image) 
+	action = {	        
+		if (cond) then
+			TMP_REG1 = __IADDR + 8; //Get_ARM_GPR(15);
+			if (setl == 1) then 
+				Set_ARM_GPR(14, __IADDR + 8);
+			endif;
+			TMP_SWORD = signed_immed_24;
+			TMP_REG2 = TMP_REG1 + TMP_SWORD;
+			if (TMP_REG2 == 0) then
+				GPR[0] = (2 << 16) + 38;// exit code pour angel
+				"swi_impl"(0x1);
+			else
+				Set_ARM_GPR(15, TMP_REG2);
+				// NIA = TMP_REG2;
+			endif;		   
+		endif;
+		//  Branch(signed_immed_24);  
+	}
+
+op BX_ARM(cond : condition, rd : REG_INDEX)
+	syntax = format("BX%s %s", cond.syntax, rd.syntax)
+	image  = format("%s000100101111111111110001%s", cond.image, rd.image) 
+	action = {
+		if (cond) then 
+			TMP_REG1 = Get_ARM_GPR(rd); 
+			TBIT = TMP_REG1<0..0>;
+			TFLAG = TBIT;
+			NIA  = TMP_REG1 & 0xFFFFFFFE;
+		endif;
+	}
+
+
+mode OFFSET_12(n: u12) = n
+	syntax = format("#%d", n)
+	image = format("%12b", n)
+
+
+mode loadstoreSpecifiedShift(shiftAmt: u5, shiftKind: u2, r: REG_INDEX, result: u32, temp: u32)= result
+	syntax = format("%s, %s #%d", 
+	r.syntax, 
+	switch (shiftKind) {
+		case LSL : 
+			if (shiftAmt != 0 ) then
+				'LSL'
+			else
+				''
+			endif	
+		case LSR: 'LSR'
+		case ASR: 'ASR'
+		case ROR: 'ROR' }, 
+	shiftAmt)
+	image  = format("%5b%2b0%s%0b%0b", shiftAmt, shiftKind, r.image,result,temp)
+	action = {
+		if r <= 14 then
+			temp = GPR[r + GetDis(r)];
+		else
+			temp = __IADDR + 8;
+		endif;
+		if (shiftKind == LSL) then
+			result = temp << shiftAmt;
+		else
+			if (shiftKind == LSR) then
+				if (shiftAmt == 0) then
+					result = 0;
+				else
+					result = temp >> shiftAmt;
+				endif;
+			else 
+				if (shiftKind == ASR) then
+					if (shiftAmt == 0) then
+						if (temp<31..31> == 1) then
+							result = 0b11111111111111111111111111111111;
+						else
+							result = 0;
+						endif;
+					else
+						result = temp >> shiftAmt;
+						if temp<31..31> == 1 then
+							result<31..32-shiftAmt> = 0b11111111111111111111111111111111; 
+						endif;
+					endif;
+				else
+					if (shiftKind == ROR) then
+						if shiftAmt == 0 then
+							result = (coerce(s32, CFLAG) << 31) | (  temp >> 1);
+						else
+							result = temp >>> shiftAmt;
+						endif;	
+					else
+						result = 0; // impossible
+					endif;
+				endif;
+			endif;
+		endif;
+   } 
+
+op Mem_load_store_imm(cond : condition, setpre : u1, setu : u1,setb : u1,setw : u1,setl : u1, rn : REG_INDEX, rd : REG_INDEX ,offset12 : OFFSET_12, preacc:u1, postacc: u1)
+	syntax = format("%sR%s%s%s %s, [%s%s,%s%s%s%s",
+		if setl then 'LD' else 'ST' endif ,
+		cond.syntax,
+		if setb then 'B' else '' endif ,
+		if setw then 
+			if (setpre == 0) then  'T'					 
+			else		  ''
+			endif
+		else '' endif,
+		rd.syntax,
+		rn.syntax,
+		if setpre then '' else ']' endif ,
+		if setu then '' else '-' endif ,
+		offset12.syntax,
+		if setpre then ']' else '' endif ,
+		if setw then '!' else '' endif ) 
+
+	image = format("%s010%1b%1b%1b%1b%1b%s%s%s%0b%0b", cond.image, setpre,
+		setu, setb, setw, setl,rn.image,rd.image,offset12.image,
+		preacc, postacc)
+	action = {	   
+		TMP_REG3 = offset12;
+		if (cond) then
+			if setu == 0 then
+		 		TMP_REG3 = - TMP_REG3;
+		  	endif;
+			if (setpre == 0)  && (setw == 1) then
+		   		TMP_FIVE = MBITS;
+				MBITS = mode_user;
+		   	endif;
+			TMP_REG1 = Get_ARM_GPR(rd);
+			TMP_REG2 = Get_ARM_GPR(rn);
+			if (setpre == 1) then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+			endif;
+			if (setb == 1) then
+				 if (setl == 1) then
+					LDRB(rd);	  
+				 else
+					STRB();
+				 endif;
+			else
+				 if (setl == 1) then
+					LDR(rd);
+				 else
+					STR();
+				 endif;
+			endif;	
+			if setpre == 0 then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+				Set_ARM_GPR(rn,TMP_REG2);	
+			else 
+				if (setw == 1 ) then		     		     
+					Set_ARM_GPR(rn,TMP_REG2);		     
+				endif; 
+			endif;
+			if (setpre == 0)  && (setw == 1) then
+				MBITS = TMP_FIVE;
+			endif;
+		endif;
+              
+	}
+
+
+op Mem_load_store_shr(cond : condition, setpre : u1, setu :
+			 u1,setb : u1,setw : u1,setl : u1, rn :
+			 REG_INDEX, rd : REG_INDEX ,shifter_operand
+			 :loadstoreSpecifiedShift, preacc: u1, postacc:u1 )
+			 
+	syntax = format("%sR%s%s%s %s, [%s%s, %s%s%s%s",
+		if setl then 'LD' else 'ST' endif, //setl.syntax,
+			cond.syntax,
+		if setb then 'B' else '' endif, //setb.syntax,
+		if setw then 
+			if (setpre == 0) then  
+				'T'					 
+			else		  
+				''
+			endif
+		else 
+			'' 
+		endif, //setpre.syntax,
+		rd.syntax,
+		rn.syntax,
+		if setpre then '' else ']' endif, //postacc.syntax,
+		if setu then '' else '-' endif , //setu.syntax,
+		shifter_operand.syntax,
+		if setpre then ']' else '' endif, //preacc.syntax,
+		if setw then '!' else '' endif ) //setw.syntax) 
+
+
+	image = format("%s011%1b%1b%1b%1b%1b%s%s%s%0b%0b", cond.image, setpre,
+				setu, setb, setw,
+				setl,rn.image,rd.image,shifter_operand.image,preacc,
+				postacc)
+	action = {
+		if (cond) then
+			shifter_operand.action;
+			if (setpre == 0)  && (setw == 1) then
+				TMP_FIVE = MBITS;
+				MBITS = mode_user;
+			endif;
+			TMP_REG1 = Get_ARM_GPR(rd);
+			TMP_REG3 = shifter_operand;
+			if setu == 0 then
+				TMP_REG3 = - TMP_REG3;
+			endif;
+			TMP_REG2 = Get_ARM_GPR(rn);
+			if (setpre == 1) then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+			endif;
+			if (setb == 1) then
+				if (setl == 1) then
+					LDRB(rd);  
+				else
+					STRB();			  
+				endif;
+			else
+				if (setl == 1) then
+					LDR(rd);
+				else
+					STR();
+				endif;
+			endif;	 
+			if setpre == 0 then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+				Set_ARM_GPR(rn,TMP_REG2);	
+			else 
+				if (setw == 1 ) then		     		     
+					Set_ARM_GPR(rn,TMP_REG2);		     
+				endif; 
+			endif;
+			if (setpre == 0)  && (setw == 1) then               
+				MBITS = TMP_FIVE; 
+			endif;
+		endif;
+
+	}
+
+
+op STRH_imm(cond: condition, setpre: u1,setu:u1,setw:u1,rn : REG_INDEX, rd :	 REG_INDEX , immh: u4, imml:u4,
+	 offset8:u8,preacc:u1, postacc: u1)
+
+	syntax = format("STR%sH %s, [%s%s,%s#%d%s%s",
+		cond.syntax, 
+		rd.syntax,
+		rn.syntax,
+		if setpre then '' else ']' endif,
+		if setu then '' else '-' endif,
+		offset8,
+		if setpre then ']' else '' endif,
+		if setw then '!' else '' endif )
+ 
+	image = format("%s000%1b%1b1%1b0%s%s%4b1011%4b%0b%0b%0b", cond.image, setpre,setu, setw,rn.image,rd.image,immh,imml,	preacc, postacc,offset8)
+	action = {
+		offset8<7..4> = immh;
+		offset8<3..0> = imml;
+		TMP_REG3 = offset8;
+		if (cond) then
+			if setu == 0 then
+				TMP_REG3 = - TMP_REG3;
+			endif;
+			TMP_REG1 = Get_ARM_GPR(rd);
+			TMP_REG2 = Get_ARM_GPR(rn);
+			if (setpre == 1) then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+			endif;
+			STRH();
+			if setpre == 0 then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+				Set_ARM_GPR(rn,TMP_REG2);	
+			else 
+				if (setw == 1 ) then		     		     
+					Set_ARM_GPR(rn,TMP_REG2);		     
+				endif; 
+			endif;	 
+		endif;
+       }
+
+
+op STRH_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_INDEX , rm: REG_INDEX,preacc:u1, postacc: u1)
+	syntax = format("STR%sH %s, [%s%s,%s%s%s%s",
+		cond.syntax, 
+		rd.syntax,
+		rn.syntax,
+		if setpre then '' else ']' endif,//postacc.syntax,
+		if setu then '' else '-' endif ,//setu.syntax,
+		rm.syntax,
+		if setpre then ']' else '' endif,//preacc.syntax,
+		if setw then '!' else '' endif )//setw.syntax) 
+
+	image = format("%s000%1b%1b0%1b0%s%s00001011%s%0b%0b", cond.image,
+				setpre,setu, setw,rn.image,rd.image,rm.image, preacc, postacc)
+	action = {
+		TMP_REG3 = Get_ARM_GPR(rm);
+		if (cond) then
+			if setu == 0 then
+				TMP_REG3 = - TMP_REG3;
+			endif;
+			TMP_REG1 = Get_ARM_GPR(rd);
+			TMP_REG2 = Get_ARM_GPR(rn);
+			if (setpre == 1) then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+			endif;
+			STRH();
+			if setpre == 0 then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+				Set_ARM_GPR(rn,TMP_REG2);	
+			else 
+				if (setw == 1 ) then		     		     
+					Set_ARM_GPR(rn,TMP_REG2);		     
+				endif; 
+			endif;
+		endif;
+       }
+
+
+op LDRH_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_INDEX , immh: u4, imml:u4,
+	 offset8:u8,preacc:u1, postacc: u1)
+	syntax = format("LDR%sH %s, [%s%s,%s#%d%s%s",
+		cond.syntax, 
+		rd.syntax,
+		rn.syntax,
+		if setpre then '' else ']' endif,//postacc
+		if setu then '' else '-' endif,//setu
+		offset8,
+		if setpre then ']' else '' endif,//preacc
+		if setw then '!' else '' endif )//setw
+	 
+
+	image = format("%s000%1b%1b1%1b1%s%s%4b1011%4b%0b%0b%0b", cond.image, setpre,setu, setw,rn.image,rd.image,immh,imml,	preacc, postacc,offset8)
+
+	action = {
+		offset8<7..4> = immh;
+		offset8<3..0> = imml;
+		TMP_REG3 = offset8;
+		if (cond) then
+			if setu == 0 then
+				TMP_REG3 = - TMP_REG3;
+			endif;
+			TMP_REG1 = Get_ARM_GPR(rd);
+			TMP_REG2 = Get_ARM_GPR(rn);
+			if (setpre == 1) then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+			endif;
+			LDRH();
+			if setpre == 0 then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+				Set_ARM_GPR(rn,TMP_REG2);	
+			else 
+				if (setw == 1 ) then		     		     
+					Set_ARM_GPR(rn,TMP_REG2);		     
+				endif; 
+			endif;	 
+		endif;
+       }
+
+
+op LDRH_shr(cond: condition, setpre:
+u1,setu:u1,setw:u1,rn : REG_INDEX, rd :
+	 REG_INDEX , rm: REG_INDEX,preacc:u1, postacc: u1)
+
+	syntax = format("LDR%sH %s, [%s%s,%s%s%s%s",
+		cond.syntax, 
+		rd.syntax,
+		rn.syntax,
+		if setpre then '' else ']' endif,//postacc.syntax,
+		if setu then '' else '-' endif ,//setu.syntax,
+		rm.syntax,
+		if setpre then ']' else '' endif,//preacc.syntax,
+		if setw then '!' else '' endif )//setw.syntax) 
+	image = format("%s000%1b%1b0%1b1%s%s00001011%s%0b%0b", cond.image, setpre,setu, setw,rn.image,rd.image,rm.image,preacc, postacc)
+
+	action = {
+		TMP_REG3 = Get_ARM_GPR(rm);
+		if (cond) then
+			if setu == 0 then
+				TMP_REG3 = - TMP_REG3;
+			endif;
+			TMP_REG1 = Get_ARM_GPR(rd);
+			TMP_REG2 = Get_ARM_GPR(rn);
+			if (setpre == 1) then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+			endif;
+			LDRH();
+			if setpre == 0 then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+				Set_ARM_GPR(rn,TMP_REG2);	
+			else 
+				if (setw == 1 ) then		     		     
+					Set_ARM_GPR(rn,TMP_REG2);		     
+				endif; 
+			endif;
+		endif;
+       }
+ 
+
+
+op LDRSB_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_INDEX , immh: u4, imml:u4,
+	 offset8:u8,preacc:u1, postacc: u1)
+
+	syntax = format("LDR%sSB %s, [%s%s,%s#%d%s%s",
+		cond.syntax, 
+		rd.syntax,
+		rn.syntax,
+		if setpre then '' else ']' endif,//postacc
+		if setu then '' else '-' endif,//setu
+		offset8,
+		if setpre then ']' else '' endif,//preacc
+		if setw then '!' else '' endif )//setw
+
+	image = format("%s000%1b%1b1%1b1%s%s%4b1101%4b%0b%0b%0b", cond.image, setpre,setu, setw,rn.image,rd.image,immh,imml,	preacc, postacc,offset8)
+	action = {
+		offset8<7..4> = immh;
+		offset8<3..0> = imml;
+		TMP_REG3 = offset8;
+		if (cond) then
+			if setu == 0 then
+				TMP_REG3 = - TMP_REG3;
+			endif;
+			TMP_REG1 = Get_ARM_GPR(rd);
+			TMP_REG2 = Get_ARM_GPR(rn);
+			if (setpre == 1) then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+			endif;
+			LDRSB();
+			if setpre == 0 then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+				Set_ARM_GPR(rn,TMP_REG2);	
+			else 
+				if (setw == 1 ) then		     		     
+				Set_ARM_GPR(rn,TMP_REG2);		     
+				endif; 
+			endif;	 
+		endif;
+       }
+
+op LDRSB_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd :REG_INDEX , rm: REG_INDEX,preacc:u1, postacc: u1)
+	syntax = format("LDR%sSB %s, [%s%s,%s%s%s%s",
+		cond.syntax, 
+		rd.syntax,
+		rn.syntax,
+		if setpre then '' else ']' endif,//postacc.syntax,
+		if setu then '' else '-' endif ,//setu.syntax,
+		rm.syntax,
+		if setpre then ']' else '' endif,//preacc.syntax,
+		if setw then '!' else '' endif )//setw.syntax) 
+
+	image = format("%s000%1b%1b0%1b1%s%s00001101%s%0b%0b", cond.image, setpre,setu, setw,rn.image,rd.image,rm.image,preacc, postacc)
+
+	action = {
+		TMP_REG3 = Get_ARM_GPR(rm);
+		if (cond) then
+			if setu == 0 then
+				TMP_REG3 = - TMP_REG3;
+			endif;
+			TMP_REG1 = Get_ARM_GPR(rd);
+			TMP_REG2 = Get_ARM_GPR(rn);
+			if (setpre == 1) then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+			endif;
+			LDRSB();
+			if setpre == 0 then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+				Set_ARM_GPR(rn,TMP_REG2);	
+			else 
+				if (setw == 1 ) then		     		     
+					Set_ARM_GPR(rn,TMP_REG2);		     
+				endif; 
+			endif;
+		endif;
+       } 
+
+
+op LDRSH_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd :REG_INDEX , immh: u4, imml:u4,
+	 offset8:u8,preacc:u1, postacc: u1)
+
+	syntax = format("LDR%sSH %s, [%s%s,%s#%d%s%s",
+	cond.syntax, 
+		rd.syntax,
+		rn.syntax,
+		if setpre then '' else ']' endif,//postacc
+		if setu then '' else '-' endif,//setu
+		offset8,
+		if setpre then ']' else '' endif,//preacc
+		if setw then '!' else '' endif )//setw
+
+	image = format("%s000%1b%1b1%1b1%s%s%4b1111%4b%0b%0b%0b", cond.image, setpre,setu, setw,rn.image,rd.image,immh,imml,	preacc, postacc,offset8)
+
+	action = {
+		offset8<7..4> = immh;
+		offset8<3..0> = imml;
+		TMP_REG3 = offset8;
+		if (cond) then
+			if setu == 0 then
+				TMP_REG3 = - TMP_REG3;
+			endif;
+			TMP_REG1 = Get_ARM_GPR(rd);
+			TMP_REG2 = Get_ARM_GPR(rn);
+			if (setpre == 1) then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+			endif;
+			LDRSH();
+			if setpre == 0 then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+				Set_ARM_GPR(rn,TMP_REG2);	
+			else 
+				if (setw == 1 ) then		     		     
+					Set_ARM_GPR(rn,TMP_REG2);		     
+				endif; 
+			endif;	 
+		endif;
+       }
+
+op LDRSH_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_INDEX , rm: REG_INDEX,preacc:u1, postacc: u1)
+	syntax = format("LDR%sSH %s, [%s%s,%s%s%s%s",
+		cond.syntax, 
+		rd.syntax,
+		rn.syntax,
+		if setpre then '' else ']' endif,//postacc.syntax,
+		if setu then '' else '-' endif ,//setu.syntax,
+		rm.syntax,
+		if setpre then ']' else '' endif,//preacc.syntax,
+		if setw then '!' else '' endif )//setw.syntax) 
+
+	image = format("%s000%1b%1b0%1b1%s%s00001111%s%0b%0b", cond.image, setpre,setu, setw,rn.image,rd.image,rm.image,preacc, postacc)
+
+	action = {
+		if (cond) then
+			if setu == 0 then
+				TMP_REG3 = - TMP_REG3;
+			endif;
+			TMP_REG1 = Get_ARM_GPR(rd);
+			TMP_REG2 = Get_ARM_GPR(rn);
+			if (setpre == 1) then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+			endif;
+			LDRSH();
+			if setpre == 0 then
+				TMP_REG2 = TMP_REG2 + TMP_REG3;
+				Set_ARM_GPR(rn,TMP_REG2);	
+			else 
+				if (setw == 1 ) then		     		     
+					Set_ARM_GPR(rn,TMP_REG2);		     
+				endif; 
+			endif;	 
+		endif;
+
+       }
+
+
+
+///////////////////////////////////////////
+// Software Interruption Instructions	///	
+//
+// VI Miscellaneous arithmetic Instructions
+///////////////////////////////////////////
+
+op SWI(cond : condition, Immed_24: IMM24)
+	syntax = format("SWI%s %s", cond.syntax, Immed_24.syntax)
+	image = format("%s1111%s",cond.image,Immed_24.image)
+	action = 
+	{ 
+		if (cond) then
+			GPR[24] = __IADDR + 4;
+			Uspsr[0] = Ucpsr;
+			MBITS = mode_supervisor;
+			TFLAG = 0;
+			IFLAG = 1;
+			TMP_IMM = 0;
+		endif;
+	}
+
+///////////////////////////////////////////
+// Multiply Instructions
+///////////////////////////////////////////
+
+
+op MLA(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, rs : REG_INDEX, rm : REG_INDEX)
+	syntax = format("MLA%s%s %s, %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rm.syntax, rs.syntax, rn.syntax)
+	image = format("%s0000001%s%s%s%s1001%s", cond.image,sets.image, rd.image, rn.image, rs.image, rm.image)
+	action = {
+		if (cond) then
+			sets.action;
+			TMP_REG1 = Get_ARM_GPR(rm);
+			TMP_REG2 = Get_ARM_GPR(rs);
+			TMP_REG4 = Get_ARM_GPR(rn);
+			TMP_DOUBLE = TMP_REG1 * TMP_REG2 + TMP_REG4;
+			TMP_REG4 = TMP_DOUBLE<31..0>;
+			Set_ARM_GPR(rd,TMP_REG4);
+			TMP_REG3 = Get_ARM_GPR(rd);
+			if SBIT == 1 then
+				NFLAG = TMP_REG3<31..31>;
+				if TMP_REG3 == 0 then
+					ZFLAG = 1;
+				else
+					ZFLAG = 0;
+				endif;
+			endif;
+		endif;
+	}
+op MUL(cond : condition, sets : setS, rd : REG_INDEX, rs : REG_INDEX, rm : REG_INDEX)
+	syntax = format("MUL%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rm.syntax, rs.syntax)
+	image = format("%s0000000%s%s0000%s1001%s", cond.image,sets.image, rd.image, rs.image, rm.image)
+	action = {
+			if (cond) then
+				sets.action;
+				TMP_REG1 = Get_ARM_GPR(rm);
+				TMP_REG2 = Get_ARM_GPR(rs);
+				TMP_DOUBLE = TMP_REG1 * TMP_REG2;
+				TMP_REG4 = TMP_DOUBLE<31..0>;
+				Set_ARM_GPR(rd,TMP_REG4);
+				TMP_REG3 = Get_ARM_GPR(rd);
+				if SBIT == 1 then
+					NFLAG = TMP_REG3<31..31>;
+					if SBIT == 1 then
+						NFLAG = TMP_REG3<31..31>;
+						if TMP_REG3 == 0 then
+							ZFLAG = 1;
+						else
+							ZFLAG = 0;
+						endif;
+					endif;
+				endif;
+			endif;
+	}
+
+op SMULL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : REG_INDEX, rm : REG_INDEX)
+	syntax = format("SMULL%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
+	image = format("%s0000110%s%s%s%s1001%s",cond.image,sets.image,rdhi.image,rdlo.image,rs.image,rm.image)
+	action = { 
+		if (cond) then
+			sets.action;
+			TMP_REG1 = Get_ARM_GPR(rm);
+			TMP_REG2 = Get_ARM_GPR(rs);
+			TMP_DWORD = coerce(s64, TMP_REG1) * coerce(s64, TMP_REG2);
+			TMP_REG3 = TMP_DWORD<31..0>;
+			Set_ARM_GPR(rdlo,TMP_REG3);
+			TMP_REG4 = TMP_DWORD<63..32>;
+			Set_ARM_GPR(rdhi,TMP_REG4);
+			if (SBIT == 1) then
+				NFLAG = TMP_REG4<31..31>;
+				if (TMP_REG4 == 0) then
+					if (TMP_REG3 == 0) then
+						ZFLAG = 1;
+					else 
+						ZFLAG = 0;
+					endif;
+				else
+					ZFLAG = 0;
+				endif;
+			endif;
+		endif;
+	}
+
+op UMULL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : REG_INDEX, rm : REG_INDEX)
+	syntax = format("UMULL%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
+	image = format("%s0000100%s%s%s%s1001%s",cond.image,sets.image,rdhi.image,rdlo.image,rs.image,rm.image)
+	action = {
+		if (cond) then
+			sets.action;
+			TMP64_UREG1 = UGet_ARM_GPR(rm);
+			TMP64_UREG2 = UGet_ARM_GPR(rs);
+			TMP_UDWORD = TMP64_UREG1 * TMP64_UREG2;
+			TMP_UREG3 = TMP_UDWORD<31..0>;
+			Set_ARM_GPR(rdlo,TMP_UREG3);
+			TMP_UREG4 = TMP_UDWORD<63..32>;
+			Set_ARM_GPR(rdhi,TMP_UREG4);
+			if (SBIT == 1) then
+				NFLAG = TMP_UREG4<31..31>;
+				if (TMP_UREG4 == 0) then
+					if (TMP_UREG3 == 0) then
+						ZFLAG = 1;
+					else 
+						ZFLAG = 0;
+					endif;
+				else
+					ZFLAG = 0;
+				endif;
+			endif;
+		endif;
+	}
+
+op SMLAL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : REG_INDEX, rm : REG_INDEX)
+	syntax = format("SMLAL%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
+	image = format("%s0000111%s%s%s%s1001%s",cond.image,sets.image,rdhi.image,rdlo.image,rs.image,rm.image)
+   action = {
+		if (cond) then
+			sets.action;
+			TMP_REG1 = Get_ARM_GPR(rm);
+			TMP_REG2 = Get_ARM_GPR(rs);
+			TMP_REG3 = Get_ARM_GPR(rdhi);
+			TMP_REG4 = Get_ARM_GPR(rdlo);
+			TMP_DWORD = coerce(s64,TMP_REG1) * coerce(s64,TMP_REG2);
+			TMP_REG6  = coerce(s32,TMP_DWORD<31..0>) + coerce (s32,TMP_REG4);
+			Set_ARM_GPR(rdlo,TMP_REG6);
+			TMP_SWORD = TMP_DWORD<31..0>;
+			TMP_REG5  = coerce(s32,TMP_DWORD<63..32>) + coerce(s32,TMP_REG3) + CarryFromAdd(TMP_SWORD,TMP_REG4,TMP_REG6);
+			Set_ARM_GPR(rdhi,TMP_REG5);
+			if (SBIT == 1) then
+				NFLAG = TMP_REG5<31..31>;
+				if (TMP_REG5 == 0) then
+					if (TMP_REG6 == 0) then
+						ZFLAG = 1;
+					else 
+						ZFLAG = 0;
+					endif;
+				else
+					ZFLAG = 0;
+				endif;
+			endif;
+		endif;
+	}
+
+op UMLAL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : REG_INDEX, rm : REG_INDEX)
+	syntax = format("UMLAL%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
+	
+	image = format("%s0000101%s%s%s%s1001%s",cond.image,sets.image,rdhi.image,rdlo.image,rs.image,rm.image)
+
+	action = {
+		if (cond) then
+			sets.action;
+			TMP64_UREG1 = UGet_ARM_GPR(rm);
+			TMP64_UREG2 = UGet_ARM_GPR(rs);
+			TMP_UREG3 = UGet_ARM_GPR(rdhi);
+			TMP_UREG4 = UGet_ARM_GPR(rdlo);
+			TMP_UDWORD = TMP64_UREG1 * TMP64_UREG2;
+			TMP_UREG6  = TMP_UDWORD<31..0>+TMP_UREG4;
+			Set_ARM_GPR(rdlo,TMP_UREG6);
+			TMP_SWORD = TMP_UDWORD<31..0>;
+			TMP_UREG5  = TMP_UDWORD<63..32> + TMP_UREG3 + CarryFromAdd(TMP_SWORD,TMP_UREG4,TMP_UREG6);
+			Set_ARM_GPR(rdhi,TMP_UREG5);
+			if (SBIT == 1) then
+				NFLAG = TMP_UREG5<31..31>;
+				if (TMP_UREG5 == 0) then
+					if (TMP_UREG6 == 0) then
+						ZFLAG = 1;
+					else 
+						ZFLAG = 0;
+					endif;
+				else
+					ZFLAG = 0;
+				endif;
+			endif;
+		endif;
+	}
+
+///////////////////////////////////////////
+// Semaphore Instructions
+///////////////////////////////////////////
+
+
+op SWP(cond : condition, setb : setB, rn:REG_INDEX, rd:REG_INDEX, rm:REG_INDEX)
+	syntax = format("SWP%s%s %s, %s, [%s]", cond.syntax, setb.syntax, rd.syntax, rm.syntax ,rn.syntax)
+	image = format("%s00010%s00%s%s00001001%s",cond.image,setb.image,rn.image,rd.image,rm.image)
+	action = {
+		setb.action;
+		if (cond) then
+			if (BBIT == 1) then
+				SWPB(rn,rd,rm);
+			else
+				SWPW(rn,rd,rm);
+			endif;
+		endif;	
+	}
+
+
+///////////////////////////////////////////
+// VI Miscellaneous arithmetic Instructions
+///////////////////////////////////////////
+
+op CLZ(cond :condition, rd:REG_INDEX, rm:REG_INDEX)
+	syntax = format("CLZ%s %s, %s", cond.syntax, rd.syntax, rm.syntax)
+	image = format("%s000101101111%s11110001%s",cond.image,rd.image,rm.image)
+	action = {
+		if (cond) then	
+			if (GPR[rm] == 0) then 
+				GPR[rd] = 0;
+			else
+				TMP_BYTE = 32;
+				TMP_SWORD = GPR[rm];
+				most_sign_bit;
+				GPR[rd] = 31 - TMP_INC;
+			endif;
+			endif;
+	}
+
+	most_sign_bit = {	
+		if (TMP_BYTE != 0) then       	       
+			if (TMP_SWORD & 0x80000000 == 1) then
+				TMP_INC = TMP_BYTE-1;			
+			else
+				TMP_SWORD = TMP_SWORD << 1;
+				//Decrease the register counter
+				TMP_BYTE = TMP_BYTE - 1;
+				most_sign_bit;
+			endif;
+		endif;
+	}
+
+
+///////////////////////////////////////////
+// Status register access instructions
+//
+// IV Miscellaneous Instructions (CPSR/SPSR)
+///////////////////////////////////////////
+op MSR_imm(cond : condition,  setr : setR, fm : field_mask, shifter_operand : rotatedImmediate)
+	syntax = format("MSR%s %s_%s, %s", cond.syntax, setr.syntax,fm.syntax, shifter_operand.syntax)
+	image = format("%s00110%s10%s1111%s", cond.image, setr.image, fm.image, shifter_operand.image)
+	action = {
+		if (cond) then
+			setr.action;	
+			fm.action;
+			CFLAG = shifter_operand.carry_out;
+			TMP_REG3 = GetSPSR();
+			TMP_SWORD = shifter_operand;
+			if (RBIT == 0) then
+				if (PSRFMODE == 1) then 
+					Ucpsr<7..0> = TMP_SWORD<7..0>;
+				endif;
+				if (PSRSMODE == 1) then 
+					Ucpsr<15..8> = TMP_SWORD<15..8>;
+				endif;
+				if (PSRXMODE == 1) then 
+					Ucpsr<23..16> = TMP_SWORD<23..16>;
+				endif;
+				if (PSRCMODE == 1) then 
+					Ucpsr<31..24> = TMP_SWORD<31..24>;
+				endif;
+			else 
+				if (PSRFMODE == 1) then 
+					TMP_REG3<7..0> = TMP_SWORD<7..0>;
+				endif;
+				if (PSRSMODE == 1) then 
+					TMP_REG3<15..8> = TMP_SWORD<15..8>;
+				endif;
+				if (PSRXMODE == 1) then 
+					TMP_REG3<23..16> = TMP_SWORD<23..16>;
+				endif;
+				if (PSRCMODE == 1) then 
+					TMP_REG3<31..24> = TMP_SWORD<31..24>;
+				endif;
+			endif;
+		endif;			
+	}
+
+op MSR_shr(cond : condition,  setr : setR, fm : field_mask, rn : REG_INDEX)
+	syntax = format("MSR%s %s_%s, %s", cond.syntax, setr.syntax, fm.syntax, rn.syntax)
+	
+	image = format("%s00010%s10%s111100000000%s",cond.image, setr.image, fm.image, rn.image)
+	
+	action = {
+		if (cond) then
+			setr.action;	
+			fm.action;
+			TMP_REG3 = GetSPSR();
+			TMP_SWORD = Get_ARM_GPR(rn);
+			if (RBIT == 0) then
+				if (PSRFMODE == 1) then 
+					Ucpsr<31..24> = TMP_SWORD<31..24>;
+				endif;
+				if (PSRSMODE == 1) then 
+					Ucpsr<23..16> = TMP_SWORD<23..16>;
+				endif;
+				if (PSRXMODE == 1) then 
+					Ucpsr<15..8> = TMP_SWORD<15..8>;
+				endif;
+				if (PSRCMODE == 1) then 
+					Ucpsr<7..0> = TMP_SWORD<7..0>;
+				endif;
+			else 
+				if (PSRFMODE == 1) then 
+					TMP_REG3<31..24> = TMP_SWORD<31..24>;
+					SetSPSR(TMP_REG3);
+				endif;
+				if (PSRSMODE == 1) then 
+					TMP_REG3<23..16> = TMP_SWORD<23..16>;
+					SetSPSR(TMP_REG3);
+				endif;
+				if (PSRXMODE == 1) then 
+					TMP_REG3<15..8> = TMP_SWORD<15..8>;
+					SetSPSR(TMP_REG3);
+				endif;
+				if (PSRCMODE == 1) then 
+					TMP_REG3<7..0> = TMP_SWORD<7..0>;
+					SetSPSR(TMP_REG3);
+				endif;
+			endif;
+		endif;			
+		
+	}
+
+op MRS(cond : condition,  setr : setR, rn : REG_INDEX)
+	syntax = format("MRS%s %s, %s", cond.syntax, rn.syntax ,setr.syntax)
+	image = format("%s00010%s001111%s000000000000", cond.image, setr.image, rn.image)
+   action = {
+		if (cond) then
+			setr.action;
+			if (RBIT == 0) then
+				Set_ARM_GPR(rn,Ucpsr);
+			else
+				TMP_REG3 = GetSPSR();
+				Set_ARM_GPR(rn,TMP_REG3);
+			endif;
+		endif;
+	}

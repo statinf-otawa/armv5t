@@ -1,0 +1,46 @@
+
+
+macro calcul_condition(cond) = \
+	switch (cond) { \
+		case 0: ZFLAG == 1 \
+		case 1: ZFLAG == 0 \
+		case 2: CFLAG == 1 \
+		case 3: CFLAG == 0 \
+		case 4: NFLAG == 1 \
+		case 5: NFLAG == 0 \
+		case 6: VFLAG == 1 \
+		case 7: VFLAG == 0 \
+		case 8: ZFLAG==0 && CFLAG==1 \
+		case 9: CFLAG==0 || ZFLAG==1 \
+		case 10: ((NFLAG==1 && VFLAG==1) || (NFLAG==0 && VFLAG==0)) \
+		case 11: ((NFLAG==1 && VFLAG==0) || (NFLAG==0 && VFLAG==1)) \
+		case 12: ((NFLAG==1 && VFLAG==1) || (NFLAG==0 && VFLAG==0)) && ZFLAG==0 \
+		case 13: ((NFLAG==1 && VFLAG==0) || (NFLAG==0 && VFLAG==1)) || ZFLAG==1 \
+		case 14: 1 == 1 \
+		case 15: 1 == 0 \
+	} \
+
+
+mode condition(cond: u4) = calcul_condition(cond)
+	syntax = switch (cond) {
+		case 0: "EQ"
+		case 1: "NE"
+		case 2: "CS"
+		case 3: "CC"
+		case 4: "MI"
+		case 5: "PL"
+		case 6: "VS"
+		case 7: "VC"
+		case 8: "HI"
+		case 9: "LS"
+		case 10: "GE"
+		case 11: "LT"
+		case 12: "GT"
+		case 13: "LE"
+		case 14: ""
+		case 15: "NV"
+	}
+	image = format("%4b", cond)
+	value = cond
+
+
