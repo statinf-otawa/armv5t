@@ -8,7 +8,7 @@ reg Uspsr [SPSRNum, u32]
 
 
 //Register containing the current register output
-reg ALU_OUT [1, u32]
+//reg ALU_OUT [1, u32]
 
 
 // The link register used in subroutine calls is register 14.
@@ -19,30 +19,30 @@ reg ALU_OUT [1, u32]
 mem M [32, u8]  // memory is u8 addressable
 //mem UKM[32, u8]  // memory is u8 addressable
 
-reg UKCOND [1, u8]
-reg UKEA   [1, u8]  
-reg UKDONE [1, u8]
-reg TTARGET [1, u32]
-reg UKGPR  [32, u8]
-reg UKVALUE [256, u8]
-reg LENGTH     [1, s32]
-reg ADDRESS    [256, u32]
-reg VALUE      [256, s8]
-reg LENGTH_GPR [1, s32]
-reg ADDRESS_GPR[128, u32]
-reg REGNUMBER_GPR[128, s32]
-reg BYTENUMBER_GPR[128, s32]
+//reg UKCOND [1, u8]
+//reg UKEA   [1, u8]  
+//reg UKDONE [1, u8]
+//reg TTARGET [1, u32]
+//reg UKGPR  [32, u8]
+//reg UKVALUE [256, u8]
+//reg LENGTH     [1, s32]
+//reg ADDRESS    [256, u32]
+//reg VALUE      [256, s8]
+//reg LENGTH_GPR [1, s32]
+//reg ADDRESS_GPR[128, u32]
+//reg REGNUMBER_GPR[128, s32]
+//reg BYTENUMBER_GPR[128, s32]
 //reg LENGTH_FPR [1, s32]
 //reg ADDRESS_FPR[256, u32]
 //reg REGNUMBER_FPR[256, s32]
 //reg BYTENUMBER_FPR[256, s32]
-reg CONVLENGTH[1, s32]
-reg CONVREGNUMBER[32, s32]
-reg CONVTYPE[32, s32]
+//reg CONVLENGTH[1, s32]
+//reg CONVREGNUMBER[32, s32]
+//reg CONVTYPE[32, s32]
 
 
 
-reg Temp[1,u32]
+var Temp[1,u32]
 reg SBIT[1,u1]
 reg MSBIT[1,u1]
 reg LBIT[1,u1]

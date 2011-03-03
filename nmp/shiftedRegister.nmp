@@ -161,12 +161,7 @@ mode immShift(shiftAmt: u5, shiftKind: u2, r: REG_INDEX) =
 	imm_shift_result(shiftKind, shiftAmt, Get_ARM_GPR(r))
 	syntax = format("%s, %s #%d", r.syntax,
 		switch (shiftKind) {
-		case LSL : 
-			if (shiftAmt != 0) then
-				'LSL'
-			else
-				''
-			endif
+		case LSL: 'LSL'
 		case LSR: 'LSR'
 		case ASR: 'ASR'
 		case ROR: 

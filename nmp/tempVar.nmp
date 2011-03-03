@@ -5,9 +5,8 @@
 
 //Flag
 
-reg ShifterCarryOut[1, u1]
-reg TMP_DOUBLE     [1, u64]
-reg TMP_REGSWORD   [1, s32]
+var TMP_DOUBLE     [1, u64]
+var TMP_REGSWORD   [1, s32]
 
 //Signed 
 var TMP_DWORD[1, s64]
