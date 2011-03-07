@@ -122,8 +122,8 @@ op THUMB(x : THUMB_instr)
 	image = x.image
 	syntax = x.syntax
 	action = {
-                PIA = CIA;
-                CIA = NIA;
+                //PIA = CIA;
+                //CIA = NIA;
                 NIA = NIA + 2;
 		x.action;
 	}
@@ -1391,18 +1391,18 @@ op SWI_thumb(imm: IMM8)
    image = format("11011111%s",imm.image)
    action = 
 	{
-		GPR[24] = NIA;
-		Uspsr[0] = Ucpsr;
-		MBITS = mode_supervisor;
-		TFLAG = 0;
-		IFLAG = 1;
+		//GPR[24] = NIA;
+		//Uspsr[0] = Ucpsr;
+		//MBITS = mode_supervisor;
+		//TFLAG = 0;
+		//IFLAG = 1;
 		//Interruption table must be defined !
-		if (hivector == 1) then
-			NIA = 0xFFFF0008;
-		else
-			NIA = 0x00000008;
-		endif;
-        	"swi_impl"(imm);
+		//if (hivector == 1) then
+		//	NIA = 0xFFFF0008;
+		//else
+		//	NIA = 0x00000008;
+		//endif;
+        	//"swi_impl"(imm);
 	}
 
 

@@ -422,28 +422,26 @@ mode field_mask = fm_f | fm_s | fm_x | fm_c | fm_fs | fm_fx | fm_fc | fm_sx | fm
 ///////////////////////////////////////////
 // 24bits Immediate values doesnt need to be computed
 ///////////////////////////////////////////
-mode IMM24(n: u24) = n
+mode IMM24(n: s24) = n
 	syntax = format("%d", n << 2)
 	image  = format("%24b", n)
 
 
 	 
 
- //if(setl) then 'L' else '' endif
 ///////////////////////////////////////////
 // Branch instruction, conditional if L bit is set
 ///////////////////////////////////////////
 op B_Cond(cond : condition, setl : u1, signed_immed_24 : IMM24)
-	syntax = format("B%s%s %s",'L', cond.syntax,signed_immed_24.syntax) 
+	syntax = format("B%s%s %x", if setl then "L" else "" endif, cond.syntax, signed_immed_24)
 	image = format("%s101%1b%s", cond.image, setl, signed_immed_24.image) 
 	action = {	        
 		if (cond) then
-			TMP_REG1 = __IADDR + 8; //Get_ARM_GPR(15);
 			if (setl == 1) then 
 				Set_ARM_GPR(14, __IADDR + 8);
 			endif;
-			TMP_SWORD = signed_immed_24;
-			TMP_REG2 = TMP_REG1 + TMP_SWORD;
+			TMP_SWORD = coerce(int(30), signed_immed_24) :: 0b00;
+			TMP_REG2 = __IADDR + 8 + TMP_SWORD;
 			if (TMP_REG2 == 0) then
 				GPR[0] = (2 << 16) + 38;// exit code pour angel
 				"swi_impl"(0x1);

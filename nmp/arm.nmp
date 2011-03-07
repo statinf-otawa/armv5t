@@ -55,9 +55,9 @@ include "tempVar.nmp"
 
 
 // Program Counters
-reg CIA[1, s32]
+//reg CIA[1, s32]
 reg NIA[1, s32]    alias = GPR[15] __attr(pc)
-reg PIA[1, s32]
+//reg PIA[1, s32]
 
 
 ///////////////////////////////////////////
@@ -66,8 +66,8 @@ reg PIA[1, s32]
 op init ()
 	action = { 
 		NIA = 0x2000;
-		CIA = 0x2000;
-		PIA = 0x2000;
+		//CIA = 0x2000;
+		//PIA = 0x2000;
 
 		//LR
 		GPR[14]=0x2000;
@@ -90,14 +90,14 @@ op init ()
 ////////////////////////////////////////////////////
 
 
-op multi = ARM | THUMB
+op multi = ARM //| THUMB
 
 op ARM(x : ARM_instr)
 	image = x.image
 	syntax = x.syntax
 	action = {
-                PIA = CIA;
-                CIA = NIA;
+                //PIA = CIA;
+                //CIA = NIA;
                 NIA = NIA + 4;
 		x.action;
 	}

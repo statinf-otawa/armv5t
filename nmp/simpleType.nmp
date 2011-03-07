@@ -13,6 +13,7 @@ type u1  = card(1)
 // basic signed types
 type s64 = int(64)
 type s32 = int(32)
+type s24 = int(24)
 type s16 = int(16)
 type s11 = int(11)
 type s8  = int(8)

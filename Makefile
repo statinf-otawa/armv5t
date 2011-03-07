@@ -40,7 +40,7 @@ include/arm/config.h: config.tpl
 	test -d src || mkdir src
 	cp config.tpl include/arm/config.h
 
-src/disasm.c:
+src/disasm.c: arm.irg
 	$(GLISS_PATH)/gep/gliss-disasm arm.nml -o $@ -c
 
 arm-sim:
