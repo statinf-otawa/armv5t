@@ -522,7 +522,7 @@ op Mem_load_store_imm(cond : condition, setpre : u1, setu : u1,setb : u1,setw : 
 	image = format("%s010%1b%1b%1b%1b%1b%s%s%s", cond.image, setpre,
 		setu, setb, setw, setl, rn.image,rd.image,offset12.image)
 	action = {	   
-		TMP_REG3 = offset12;
+		TMP_REG3 = coerce(u32, offset12);
 		if (cond) then
 			if setu == 0 then
 		 		TMP_REG3 = - TMP_REG3;
