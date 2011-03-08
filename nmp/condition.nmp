@@ -23,22 +23,22 @@ macro calcul_condition(cond) = \
 
 mode condition(cond: u4) = calcul_condition(cond)
 	syntax = switch (cond) {
-		case 0: "EQ"
-		case 1: "NE"
-		case 2: "CS"
-		case 3: "CC"
-		case 4: "MI"
-		case 5: "PL"
-		case 6: "VS"
-		case 7: "VC"
-		case 8: "HI"
-		case 9: "LS"
-		case 10: "GE"
-		case 11: "LT"
-		case 12: "GT"
-		case 13: "LE"
+		case 0: "eq"
+		case 1: "ne"
+		case 2: "cs"
+		case 3: "cc"
+		case 4: "mi"
+		case 5: "pl"
+		case 6: "vs"
+		case 7: "vc"
+		case 8: "hi"
+		case 9: "ls"
+		case 10: "ge"
+		case 11: "lt"
+		case 12: "gt"
+		case 13: "le"
 		case 14: ""
-		case 15: "NV"
+		case 15: "nv"
 	}
 	image = format("%4b", cond)
 	value = cond

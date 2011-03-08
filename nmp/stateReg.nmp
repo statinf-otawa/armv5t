@@ -99,5 +99,5 @@ reg  TFLAG [1, u1] alias = Ucpsr<5..5>
 reg TBIT [1, u1] alias = Ucpsr<5..5>
 
 //Determine the mode in which the processor operates
-reg MBITS [1, u1] alias  = Ucpsr<4..0>
+reg MBITS [1, u5] alias  = Ucpsr<4..0>
 

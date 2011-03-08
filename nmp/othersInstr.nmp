@@ -433,12 +433,12 @@ mode IMM24(n: s24) = n
 // Branch instruction, conditional if L bit is set
 ///////////////////////////////////////////
 op B_Cond(cond : condition, setl : u1, signed_immed_24 : IMM24)
-	syntax = format("B%s%s %x", if setl then "L" else "" endif, cond.syntax, signed_immed_24)
+	syntax = format("B%s%s %x", if setl then "L" else "" endif, cond.syntax, __IADDR + 8 + (coerce(int(30), signed_immed_24) :: 0b00))
 	image = format("%s101%1b%s", cond.image, setl, signed_immed_24.image) 
 	action = {	        
 		if (cond) then
 			if (setl == 1) then 
-				Set_ARM_GPR(14, __IADDR + 8);
+				Set_ARM_GPR(14, __IADDR + 4);
 			endif;
 			TMP_SWORD = coerce(int(30), signed_immed_24) :: 0b00;
 			TMP_REG2 = __IADDR + 8 + TMP_SWORD;

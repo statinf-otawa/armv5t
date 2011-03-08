@@ -435,7 +435,7 @@ op BLX1_thumb(H : u2,offs :OFFS11)
 	action = {
                                    
                  if (H == 2) then
-                           Set_ARM_GPR(14, __IADDR + 8 +(coerce(s32,offs) << 12));
+                           Set_ARM_GPR(14, __IADDR + 4 +(coerce(s32,offs) << 12));
                  else 
                  if (H == 3) then
 			    NIA = Get_ARM_GPR(14) + (coerce(u32, offs) << 1);

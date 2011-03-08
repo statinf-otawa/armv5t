@@ -17,7 +17,7 @@ mode rotatedImmediate(rotate : u4, v : u8) = coerce(u32, v) >>> (coerce(u32, rot
 
 
 mode setS(set: u1) = set
-	syntax=format("%s", if set then 'S' else '' endif)
+	syntax=format("%s", if set then 's' else '' endif)
 	image = format("%1b", set)  
 	action = {
 		SBIT = set;
@@ -31,7 +31,7 @@ macro update_shift_CFLAG(shift_op) = \
 
 
 op ADD_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: rotatedImmediate)
-	syntax = format("ADD%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("add%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0010100%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -43,7 +43,7 @@ op ADD_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 
 
 op ADC_shr(cond : condition, sets : setS, rd : REG_INDEX, rn :REG_INDEX, shifter_operand	: shiftedRegister) 
-	syntax = format("ADC%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("adc%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0000101%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -55,7 +55,7 @@ op ADC_shr(cond : condition, sets : setS, rd : REG_INDEX, rn :REG_INDEX, shifter
 	
 
 op ADC_imm(cond : condition, sets : setS, rd : REG_INDEX, rn :REG_INDEX, shifter_operand : rotatedImmediate)
-	syntax = format("ADC%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("adc%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0010101%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -66,7 +66,7 @@ op ADC_imm(cond : condition, sets : setS, rd : REG_INDEX, rn :REG_INDEX, shifter
 	}
 
 op ADD_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: shiftedRegister)
-	syntax = format("ADD%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("add%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0000100%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -77,7 +77,7 @@ op ADD_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op AND_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: shiftedRegister)
-	syntax = format("AND%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("and%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0000000%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -88,7 +88,7 @@ op AND_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op AND_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: rotatedImmediate)
-	syntax = format("AND%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("and%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0010000%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -99,7 +99,7 @@ op AND_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op BIC_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: shiftedRegister)
-	syntax = format("BIC%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("bic%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0001110%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -110,7 +110,7 @@ op BIC_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op CMN_shr(cond : condition, rn : REG_INDEX, shifter_operand : shiftedRegister)
-	syntax = format("CMN%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("cmn%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s00010111%s0000%s", cond.image, rn.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -119,7 +119,7 @@ op CMN_shr(cond : condition, rn : REG_INDEX, shifter_operand : shiftedRegister)
 		endif;
 	}
 op CMN_imm(cond : condition, rn : REG_INDEX, shifter_operand	: rotatedImmediate)
-	syntax = format("CMN%s %s, %s", cond.syntax,  rn.syntax, shifter_operand.syntax)
+	syntax = format("cmn%s %s, %s", cond.syntax,  rn.syntax, shifter_operand.syntax)
 	image = format("%s00110111%s0000%s", cond.image, rn.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -129,7 +129,7 @@ op CMN_imm(cond : condition, rn : REG_INDEX, shifter_operand	: rotatedImmediate)
 	}
 
 op CMP_imm(cond : condition, rn : REG_INDEX, shifter_operand : rotatedImmediate)
-	syntax = format("CMP%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("cmp%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s00110101%s0000%s", cond.image, rn.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -139,7 +139,7 @@ op CMP_imm(cond : condition, rn : REG_INDEX, shifter_operand : rotatedImmediate)
 	}
 
 op CMP_shr(cond : condition, rn : REG_INDEX, shifter_operand	: shiftedRegister)
-	syntax = format("CMP%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("cmp%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s00010101%s0000%s", cond.image,  rn.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -149,7 +149,7 @@ op CMP_shr(cond : condition, rn : REG_INDEX, shifter_operand	: shiftedRegister)
 	}
 
 op EOR_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand : rotatedImmediate)
-	syntax = format("EOR%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("eor%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0010001%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -160,7 +160,7 @@ op EOR_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op EOR_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand : shiftedRegister)
-	syntax = format("EOR%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("eor%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0000001%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -171,7 +171,7 @@ op EOR_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op MOV_imm(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand : rotatedImmediate )
-	syntax = format("MOV%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
+	syntax = format("mov%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
 	image = format("%s0011101%s0000%s%s", cond.image, sets.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -182,7 +182,7 @@ op MOV_imm(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand : rota
 	}
 
 op MOV_shr(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: shiftedRegister)
-	syntax = format("MOV%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
+	syntax = format("mov%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
 	image = format("%s0001101%s0000%s%s", cond.image, sets.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -193,7 +193,7 @@ op MOV_shr(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: shif
 	}
 
 op MVN_imm(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: rotatedImmediate)
-	syntax = format("MVN%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
+	syntax = format("mvn%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
 	image = format("%s0011111%s0000%s%s", cond.image, sets.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -204,7 +204,7 @@ op MVN_imm(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: rota
 	}
 
 op MVN_shr(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: shiftedRegister)
-	syntax = format("MVN%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
+	syntax = format("mvn%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
 	image = format("%s0001111%s0000%s%s", cond.image, sets.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -215,7 +215,7 @@ op MVN_shr(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: shif
 	}
 
 op ORR_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand : rotatedImmediate)
-	syntax = format("ORR%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("orr%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0011100%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -226,7 +226,7 @@ op ORR_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op ORR_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand : shiftedRegister)
-	syntax = format("ORR%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("orr%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0001100%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -237,7 +237,7 @@ op ORR_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op RSB_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand : rotatedImmediate)
-	syntax = format("RSB%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("rsb%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0010011%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -248,7 +248,7 @@ op RSB_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op RSB_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand : shiftedRegister)
-	syntax = format("RSB%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("rsb%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0000011%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -259,7 +259,7 @@ op RSB_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op RSC_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand : rotatedImmediate)
-	syntax = format("RSC%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("rsc%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0010111%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -270,7 +270,7 @@ op RSC_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op RSC_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand : shiftedRegister)
-	syntax = format("RSC%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("rsc%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0000111%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -281,7 +281,7 @@ op RSC_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 	}
 
 op SBC_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand : rotatedImmediate)
-	syntax = format("SBC%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("sbc%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0010110%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -291,7 +291,7 @@ op SBC_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 		endif;
 	}
 op SBC_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand : shiftedRegister)
-	syntax = format("SBC%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("sbc%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0000110%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -301,7 +301,7 @@ op SBC_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 		endif;
 	}
 op SUB_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: rotatedImmediate)
-	syntax = format("SUB%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("sub%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0010010%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -311,7 +311,7 @@ op SUB_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 		endif;
 	}
 op SUB_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: shiftedRegister)
-	syntax = format("SUB%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("sub%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0000010%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -321,7 +321,7 @@ op SUB_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 		endif;
 	}
 op TEQ_imm(cond : condition,  rn : REG_INDEX, shifter_operand : rotatedImmediate)
-	syntax = format("TEQ%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("teq%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s00110011%s0000%s", cond.image, rn.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -330,7 +330,7 @@ op TEQ_imm(cond : condition,  rn : REG_INDEX, shifter_operand : rotatedImmediate
 		endif;
 	}
 op TEQ_shr(cond : condition, rn : REG_INDEX, shifter_operand	: shiftedRegister)
-	syntax = format("TEQ%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("teq%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s00010011%s0000%s", cond.image,  rn.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -339,7 +339,7 @@ op TEQ_shr(cond : condition, rn : REG_INDEX, shifter_operand	: shiftedRegister)
 		endif;
 	}
 op TST_imm(cond : condition,  rn : REG_INDEX, shifter_operand : rotatedImmediate)
-	syntax = format("TST%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("tst%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s00110001%s0000%s", cond.image, rn.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -348,7 +348,7 @@ op TST_imm(cond : condition,  rn : REG_INDEX, shifter_operand : rotatedImmediate
 		endif;
 	}
 op TST_shr(cond : condition, rn : REG_INDEX, shifter_operand: shiftedRegister)
-	syntax = format("TST%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("tst%s %s, %s", cond.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s00010001%s0000%s", cond.image,  rn.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -357,7 +357,7 @@ op TST_shr(cond : condition, rn : REG_INDEX, shifter_operand: shiftedRegister)
 		endif;
 	}
 op BIC_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: rotatedImmediate)
-	syntax = format("BIC%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	syntax = format("bic%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0011110%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then

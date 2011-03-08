@@ -81,6 +81,10 @@ op init ()
 		GPR[29]=0x1200; 
 		//CPSR in SuperVisor mode   
 		Ucpsr = 0x13;
+		
+		// sp init for validator
+		// same vales as gdb
+		GPR[13 + 10] = 0x800;
 	 }
 
 
