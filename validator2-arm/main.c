@@ -11,6 +11,7 @@ main.c : main functions
 #include GLISS_API_H
 #include "internal.h"
 #include "all_inc.h"
+#include "../include/arm/loader.h"
 /*#include "io_module.h"*/
 
 
@@ -25,6 +26,10 @@ uint32_t gliss_pc;
 int display_values;
 int display_replies;
 int display_full_dumps;
+
+/* display instructions during co-simulation */
+int display_inst = 0;
+
 PROC(_state_t) * real_state;
 PROC(_inst_t) *curinstr;
 PROC(_platform_t) *platform;
@@ -51,14 +56,17 @@ void catch_sigusr1(int sig)
 void usage(char * pname)
 {
 	fprintf(stderr, "Usage: %s\t[-V|--version] [-h|--help] [--log|-l] [--values|-v] [--replies|-r] [--no-exit-error|-x] [--program|-p] [--dumps|-d] [target_host:port]\n", pname);
-	fprintf(stderr, "\t--version\tdisplay version number\n"
+	fprintf(stderr,
+			"\t--dumps\t\tdump the values of all registers on error\n"
 			"\t--help\t\tdisplay this help screen\n"
+			"\t--inst|-i\t\tlist the executed instructions\n"
 			"\t--log\t\tlog all communication with gdb in `pwd`/log\n"
-			"\t--values\tdisplay registers values on screen\n"
+			"\t--program\tname of the test program to run\n"
 			"\t--replies\tdisplay GDB replies on screen\n"
 			"\t--no-exit-error\tdo not exit on errors\n"
-			"\t--program\tname of the test program to run\n"
-			"\t--dumps\t\tdump the values of all registers on error\n");
+			"\t--values\tdisplay registers values on screen\n"
+			"\t--version\tdisplay version number\n"
+		);
 }
 	
 void parse_commandline(int argc, char ** argv)
@@ -80,9 +88,10 @@ void parse_commandline(int argc, char ** argv)
 		{"dumps", 0, NULL, 'd'},
 		//{"no-reg-init", 0, NULL, 'n'},
 		{NULL, 0, NULL, 0},
+		{"inst", 0, NULL, 'i'}
 		};
 
-	char *optstring = "Vhrlvxp:dn";
+	char *optstring = "Vhrlvxp:dni";
 	while ((option = getopt_long(argc, argv, optstring, longopts, &longindex)) != -1)
 	{
 
@@ -90,6 +99,7 @@ void parse_commandline(int argc, char ** argv)
 		{
 			case 'V': printf("\n"); exit (1); break;
 			case 'h': usage(argv[0]); exit(1); break;
+			case 'i': display_inst = 1; break;
 			case 'l' : do_logging = 1; break;
 			case 'v' : display_values = 1; break;
 			case 'r' : display_replies = 1; break;
@@ -175,6 +185,8 @@ void disasm_error_report(char * drive_gdb_reply_buffer, PROC(_state_t) * state, 
 	
 int init_gliss(char * drive_gdb_reply_buffer)
 {
+	arm_address_t exit_addr = 0;
+	
 	/* make the platform */
 	platform = PROC(_new_platform)();
 	if (platform == NULL) {
@@ -183,10 +195,27 @@ int init_gliss(char * drive_gdb_reply_buffer)
 	}
 
 	/* load the image in the platform */
-	if (PROC(_load_platform)(platform, gpname) == -1) {
-		fprintf(stderr, "ERROR: cannot load the given executable : %s.\n", gpname);
+	arm_loader_t *loader = arm_loader_open(gpname);
+	if(loader == NULL) {
+		fprintf(stderr, "ERROR: cannot load the executable \"%s\": %s\n", gpname, strerror(errno));
 		exit(2);
 	}
+	arm_load(platform, loader);
+
+	/* look for _exit symbol */
+	{
+		int i, cnt = arm_loader_count_syms(loader);
+		for(i = 0; i < cnt; i++) {
+			arm_loader_sym_t sym;
+			arm_loader_sym(loader, i, &sym);
+			if(strcmp(sym.name, "_exit") == 0) {
+				exit_addr = sym.value;
+				printf("INFO: found exit at %08x\n", exit_addr);
+				break;
+			}
+		}
+	}
+	arm_loader_close(loader);
 
 	/* make the state depending on the platform */
 	real_state = PROC(_new_state)(platform);
@@ -196,7 +225,7 @@ int init_gliss(char * drive_gdb_reply_buffer)
 	}
 
 	/* make the simulator */
-	sim = PROC(_new_sim)(real_state, 0, 0);
+	sim = PROC(_new_sim)(real_state, 0, exit_addr);
 	if (sim == NULL) {
 		fprintf(stderr, "ERROR: no more resources\n");
 		exit(2);
@@ -346,7 +375,7 @@ int main(int argc, char ** argv)
 	/* used to pause gdb while waiting for gliss2 to catch up */
 	int stall_gdb = 0;
 
-	while ( 1 ) 
+	while ( !arm_is_sim_ended(sim) ) 
 	{
 		instr_count++;
 		
@@ -402,7 +431,13 @@ int main(int argc, char ** argv)
 		}
 
 		curinstr = PROC(_decode)(sim->decoder, real_state->GPR[15]);
+		if(display_inst) {
+			char buf[256];
+			PROC(_disasm)(buf, curinstr);
+			printf("%08x: %s\n", real_state->GPR[15], buf);			
+		}
 		PROC(_step)(sim);
+		fflush(stdout);		/* DEBUG */
 		
 		read_vars_this_instruction(drive_gdb_reply_buffer);
 		//dump_all_windows(real_state);

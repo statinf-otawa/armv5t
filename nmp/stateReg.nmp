@@ -16,7 +16,9 @@ reg Uspsr [SPSRNum, u32]
 // reg LINK[u32] alias = GPR[14]
 
 // Memory
-mem M [32, u8]  // memory is u8 addressable
+mem M 	[32, u8]  				// 8-bits word memory
+mem M16 [32, u16] alias = M[0]	// 16-bits word memory alias
+mem M32 [32, u32] alias = M[0]	// 32-bits word memory alias
 //mem UKM[32, u8]  // memory is u8 addressable
 
 //reg UKCOND [1, u8]
