@@ -1,11 +1,11 @@
-GLISS_ARCH=/home/barre/bzr_projects/ARMv5T/
+GLISS_ARCH=$(PWD)/../
 ARCH_IRG=$(GLISS_ARCH)/arm.irg
-GLISS2_PREFIX=/home/barre/bzr_projects/gliss2/
+GLISS2_PREFIX=$(PWD)/../../gliss2
 GLISS2_ATTR=$(GLISS2_PREFIX)/gep/gliss-attr
 NMP2NML=$(GLISS2_PREFIX)/gep/gliss-nmp2nml.pl
 
 GNU_TARGET=arm-elf
-GDB_TARGET_PATH=/home/traces/Arm/bin/
+GDB_TARGET_PATH=/home/traces/Arm/bin
 GDB_NAME=$(GDB_TARGET_PATH)/$(GNU_TARGET)-gdb
 PROC_NAME=arm
 
@@ -27,7 +27,7 @@ LINK = libtool --mode=link $(CC) $(LINKFLAGS) -o $@
 
 all : validator2-$(PROC_NAME)
 
-validator2-$(PROC_NAME) : interface_code.h $(INCL) $(GLISS_ARCH)/validator.cfg $(OBJS)
+validator2-$(PROC_NAME) : interface_code.h $(INCL) $(GLISS_ARCH)/validator.cfg $(OBJS) ../src/lib$(PROC_NAME).a
 	$(LINK) $(OBJS) -lm  -l$(PROC_NAME) $(LDFLAGS) 
 
 clean:

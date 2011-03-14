@@ -1,4 +1,11 @@
 
+// mode names
+let MULT_DA = 0
+let MULT_IA = 1
+let MULT_DB = 2
+let MULT_IB = 3 
+
+
 ///////////////////////////////////
 //B bit for Load/Store instruction
 ///////////////////////////////////
@@ -44,42 +51,61 @@ op  Mem_load_store_multiple(cond: condition, adr_mode: u2, sets: u1, setw: u1, s
 	action = {
 		if (cond) then
 			TMP_REGLIST = reglist;	  
+
 			//Compute number of set bits in the register list to compute the start address
 			TMP_BYTE  = 0;
 			TMP_SETBIT = 0;
 			B15SET = 0;
-			number_of_set_bits_in;
-			TMP_REG3 = Get_ARM_GPR(rn);		  
+			number_of_set_bits_in;		// set B15SET (PC modified), TMP_SETBIT (number of register in list)
+			
+			// compute start and end address
+			TMP_REG3 = Get_ARM_GPR(rn);  
 			TMP_START_ADDR = TMP_REG3;
-			TMP_BYTE = 0;
 			TMP_REGLIST = reglist;
-			if adr_mode == 0 then  //DAMODE
-				TMP_START_ADDR = TMP_START_ADDR-(4*TMP_SETBIT)+4;
-				TMP_END_ADDR = TMP_START_ADDR;  			  
-			endif;
-			if adr_mode == 1 then  //IAMODE
-				TMP_START_ADDR = TMP_START_ADDR; 
-				TMP_END_ADDR = TMP_START_ADDR+4*TMP_SETBIT;	
-			endif;
-			if adr_mode == 2 then //DBMODE
-				TMP_START_ADDR = TMP_START_ADDR-(4*TMP_SETBIT)-4;
-				TMP_END_ADDR = TMP_START_ADDR+4;
-			endif;
-			if adr_mode == 3 then //IBMODE 
+			switch(adr_mode) {
+			case MULT_DA:
+				TMP_START_ADDR = TMP_START_ADDR - 4 * TMP_SETBIT + 4;
+				TMP_END_ADDR = TMP_START_ADDR - 4;
+			case MULT_IA:
 				TMP_START_ADDR = TMP_START_ADDR;
-				TMP_END_ADDR = TMP_START_ADDR+4*TMP_SETBIT+4;
-			endif;	
+				TMP_END_ADDR = TMP_START_ADDR + 4 * TMP_SETBIT;
+			case MULT_DB:
+				TMP_START_ADDR = TMP_START_ADDR - 4 * TMP_SETBIT;
+				TMP_END_ADDR = TMP_START_ADDR;
+			case MULT_IB:
+				TMP_START_ADDR = TMP_START_ADDR + 4;
+				TMP_END_ADDR = TMP_START_ADDR + 4 * TMP_SETBIT - 4;
+			};
+			
+			// perform the load/store
+			TMP_BYTE = 0;
 			if (setl == 0) then
 				recurs_stm;
 			else
-				recurs_ldm;		
-			endif;		  		  
+				// from 0 to 14
+				recurs_ldm;
+				
+				// special case for PC
+				if (B15SET == 1) then
+					if (sets == 0) then
+						LDM1_NIA();
+					else
+						TMP_SWORD = GetSPSR();
+						Ucpsr = TMP_SWORD;
+						LDM3_NIA();
+					endif;
+				endif;
+	
+			endif;
+			
+			// update base	  
 			if (setw == 1) then
 				Set_ARM_GPR(rn, TMP_END_ADDR);;
 			endif;
 		endif;
 
 	}	       
+
 	number_of_set_bits_in = {
 			//Count the amount of bits into the list
 			if (TMP_BYTE != 16) then
@@ -100,131 +126,32 @@ op  Mem_load_store_multiple(cond: condition, adr_mode: u2, sets: u1, setw: u1, s
 			//If a bit is set then we must add the value of the corresponding register
 			//to the stack.
 			if (TMP_BYTE != 16) then
+			
+				// process the current bit
 				if ((TMP_REGLIST & 1) == 1) then
-					if adr_mode == 0 then //DAMODE
-						STMDA(TMP_BYTE, sets);
-					endif;
-					if adr_mode == 1 then //IAMODE
-						STMIA(TMP_BYTE, sets);
-					endif;
-					if adr_mode == 2 then  //DBMODE
-						STMDB(TMP_BYTE, sets);
-					endif;
-					if adr_mode == 3 then //IBMODE 
-						STMIB(TMP_BYTE, sets);
-					endif;
+					STM(TMP_BYTE, sets);
 				endif;	
-			else 		
+
 				//Get the next bit
 				TMP_REGLIST = TMP_REGLIST >> 1;
-				//Increase the register counter
 				TMP_BYTE = TMP_BYTE + 1;
 				recurs_stm;
 			endif;
 	}
 
 	recurs_ldm = {
-			//We will test all of the 16 bits of the register list
-			//If a bit is set then we must retrieve the value of the corresponding register
-			//from the stack.
-			if (TMP_BYTE != 16) then
-				if (sets == 0) then
-					if (TMP_BYTE != 15) then
-						if ((TMP_REGLIST & 1) == 1) then
-							if adr_mode == 0 then //DAMODE
-								TMP_REG3 = GetGPRIndex(TMP_BYTE);
-								LDMDA1(TMP_REG3);
-							endif;
-							if adr_mode == 1 then //IAMODE
-								TMP_REG3 = GetGPRIndex(TMP_BYTE);
-								LDMIA1(TMP_REG3);
-							endif;
-							if adr_mode == 2 then  //DBMODE
-								TMP_REG3 = GetGPRIndex(TMP_BYTE);
-								LDMDB1(TMP_REG3);
-							endif;
-							if adr_mode == 3 then //IBMODE
-								TMP_REG3 = GetGPRIndex(TMP_BYTE);
-								LDMIB1(TMP_REG3);
-							endif;
-						endif;
-					else
-						if ((TMP_REGLIST & 1) == 1) then
-							if adr_mode == 0 then //DAMODE
-								LDMDA1_NIA();
-							endif;
-							if adr_mode == 1 then //IAMODE
-								LDMIA1_NIA();
-							endif;
-							if adr_mode == 2 then //DBMODE
-								LDMDB1_NIA();
-							endif;
-							if adr_mode == 3 then //IBMODE
-								LDMIB1_NIA();
-							endif;
-						endif;
-					endif;						
-				else
-					if (B15SET == 0) then	
-						if (TMP_BYTE != 15) then
-							if ((TMP_REGLIST & 1) == 1) then
-								if adr_mode ==	0 then //DAMODE							 
-									LDMDA1(TMP_BYTE);
-								endif;
-								if adr_mode == 1 then //IAMODE
-									LDMIA1(TMP_BYTE);
-								endif;
-								if adr_mode == 2 then //DBMODE
-									LDMDB1(TMP_BYTE);
-								endif;
-								if adr_mode == 3 then //IBMODE
-									LDMIB1(TMP_BYTE);
-								endif;
-							endif;
-						endif;
-					else
-						if (TMP_BYTE != 15) then
-							if ((TMP_REGLIST & 1) == 1) then
-								if adr_mode == 0 then //DAMODE
-									TMP_REG3 = GetGPRIndex(TMP_BYTE);
-									LDMDA1(TMP_REG3);
-								endif;
-								if adr_mode == 1 then //IAMODE
-									TMP_REG3 = GetGPRIndex(TMP_BYTE);
-									LDMIA1(TMP_REG3); 
-								endif;
-								if adr_mode == 2 then // DBMODE
-									TMP_REG3 = GetGPRIndex(TMP_BYTE);
-									LDMDB1(TMP_REG3);
-								endif;
-								if adr_mode == 3 then //IBMODE
-									TMP_REG3 = GetGPRIndex(TMP_BYTE);
-									LDMIB1(TMP_REG3);
-								endif;
-							endif;
-						else
-							TMP_SWORD = GetSPSR();
-							Ucpsr = TMP_SWORD;
-							if ((TMP_REGLIST & 1) == 1) then
-								if adr_mode  == 0 then //DAMODE
-									LDMDA3_NIA();
-								endif;
-								if adr_mode == 1 then //IAMODE
-									LDMIA3_NIA();
-								endif;
-								if adr_mode == 2 then // DBMODE
-									LDMDB3_NIA();
-								endif;
-								if adr_mode == 3 then //IBMODE
-									LDMIB3_NIA();
-								endif;
-							endif;
-						endif;
-					endif;
-				endif;		
+		//We will test all of the 16 bits of the register list
+		//If a bit is set then we must retrieve the value of the corresponding register
+		//from the stack.
+		if (TMP_BYTE != 15) then
+		
+			// load the register
+			if ((TMP_REGLIST & 1) == 1) then
+				LDM1(TMP_BYTE);
+			endif;
+		
 			//Get the next bit
 			TMP_REGLIST = TMP_REGLIST >> 1;
-			//Increase the register counter
 			TMP_BYTE = TMP_BYTE + 1;
 			recurs_ldm;
 		endif;

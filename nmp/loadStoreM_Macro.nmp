@@ -4,7 +4,6 @@
 ///////////////////////////////////////////
 
 
-
 macro GetGPRUser(r) = \
 	if (r <= 14) then \
 		GPR[r] \
@@ -12,10 +11,10 @@ macro GetGPRUser(r) = \
 		__IADDR + 8 \
 	endif
 
-
-macro STMDA(rd, ms) = \
+// STM
+macro STM(rd, sets) = \
 		TMP_EA = TMP_START_ADDR;\
-		if (ms == 0) then\
+		if (sets == 0) then\
 			TMP_SWORD = Get_ARM_GPR(rd);\
 		else\
 			TMP_SWORD = GetGPRUser(rd);\
@@ -23,76 +22,15 @@ macro STMDA(rd, ms) = \
 		SetWord(TMP_EA,TMP_SWORD);\
 		TMP_START_ADDR = TMP_START_ADDR + 4;
 
-      
-macro STMIA(rd, ms) = \
-		TMP_EA = TMP_START_ADDR;\
-		if (ms == 0) then\
-			TMP_SWORD = Get_ARM_GPR(rd);\
-		else\
-			TMP_SWORD = GetGPRUser(rd);\
-		endif;\
-		SetWord(TMP_EA,TMP_SWORD);\
-		TMP_START_ADDR = TMP_START_ADDR + 4;
-
-macro STMDB(rd, ms) = \
-		TMP_START_ADDR = TMP_START_ADDR + 4;\
-		TMP_EA = TMP_START_ADDR ;\
-		if (ms == 0) then\
-			TMP_SWORD = Get_ARM_GPR(rd);\
-		else\
-			TMP_SWORD = GetGPRUser(rd);\
-		endif;\
-		SetWord(TMP_EA,TMP_SWORD);
-
-macro STMIB(rd, ms) = \
-		TMP_START_ADDR = TMP_START_ADDR +4;\
-		TMP_EA = TMP_START_ADDR ;\
-		if (ms == 0) then\
-			TMP_SWORD = Get_ARM_GPR(rd);\
-		else\
-			TMP_SWORD = GetGPRUser(rd);\
-		endif;\
-		SetWord(TMP_EA,TMP_SWORD);
-
-macro LDMDA1(rd) = \
+// LDMxx1
+macro LDM1(rd) = \
 	      TMP_EA = TMP_START_ADDR;\
-	      GPR[rd] = GetWord(TMP_EA);\
+	      Set_ARM_GPR(rd, GetWord(TMP_EA));\
 	      TMP_START_ADDR = TMP_START_ADDR+4;
 
-macro LDMIA1(rd) = \
-	      TMP_EA = TMP_START_ADDR;\
-	      GPR[rd] = GetWord(TMP_EA);\
-	      TMP_START_ADDR = TMP_START_ADDR+4;
 
-macro LDMIA11(rd) = \
-               TMP_EA = TMP_START_ADDR;\
-	       TMP_SWORD = GetWord(TMP_EA);\
-	       Set_ARM_GPR(rd, TMP_SWORD);\
-	       TMP_START_ADDR = TMP_START_ADDR+4;
-
-macro LDMIB1(rd) = \
-              TMP_START_ADDR = TMP_START_ADDR+4;\
-	      TMP_EA = TMP_START_ADDR;\
-	      GPR[rd] = GetWord(TMP_EA);
-	      
-macro LDMDB1(rd) = \
-	      TMP_START_ADDR = TMP_START_ADDR+4;\
-	      TMP_EA = TMP_START_ADDR;\
-	      GPR[rd] = GetWord(TMP_EA);          
-
-macro LDMDA1_NIA() = \
-		TMP_EA = TMP_START_ADDR;\
-		TMP_SWORD = GetWord(TMP_EA);\
-		if (TMP_SWORD == 0) then \
-			GPR[0] = (2 << 16) + 38;\
-		else\
-			NIA = TMP_SWORD & 0xFFFFFFFE;\
-		endif;\
-		TFLAG = TMP_SWORD & 1;\
-		TBIT = TFLAG;\
-		TMP_START_ADDR = TMP_START_ADDR+4;
-
-macro LDMIA1_NIA() = \
+// LDMxx1_NIA
+macro LDM1_NIA() = \
 		TMP_EA = TMP_START_ADDR ;\
 		TMP_SWORD = GetWord(TMP_EA);\
 		if (TMP_SWORD == 0) then \
@@ -104,33 +42,9 @@ macro LDMIA1_NIA() = \
 		TBIT = TFLAG;\
 		TMP_START_ADDR = TMP_START_ADDR+4;
 
-macro LDMIB1_NIA() = \
-		TMP_START_ADDR = TMP_START_ADDR+4;\
-		TMP_EA = TMP_START_ADDR;\
-		TMP_SWORD = GetWord(TMP_EA);\
-		if (TMP_SWORD == 0) then \
-			GPR[0] = (2 << 16) + 38;\
-		else\
-			NIA = TMP_SWORD & 0xFFFFFFFE;\
-		endif;\
-		TFLAG = TMP_SWORD & 1;\
-		TBIT = TFLAG;
 
-
-macro LDMDB1_NIA() = \
-		TMP_START_ADDR = TMP_START_ADDR+4;\
-		TMP_EA = TMP_START_ADDR;\
-		TMP_SWORD = GetWord(TMP_EA);\
-		if (TMP_SWORD == 0) then \
-			GPR[0] = (2 << 16) + 38;\
-		else\
-			NIA = TMP_SWORD & 0xFFFFFFFE;\
-		endif;\
-		TFLAG = TMP_SWORD & 1;\
-		TBIT = TFLAG;
-
-
-macro LDMDA3_NIA() = \
+// LDMxx3_NIA
+macro LDM3_NIA() = \
 		TMP_EA = TMP_START_ADDR  ;\
 		TMP_SWORD = GetWord(TMP_EA);\
 		if (TMP_SWORD == 0) then \
@@ -143,42 +57,3 @@ macro LDMDA3_NIA() = \
 		endif;\
 		TMP_START_ADDR = TMP_START_ADDR+4;
 
-macro LDMIA3_NIA() = \
-		TMP_EA = TMP_START_ADDR ;\
-		TMP_SWORD = GetWord(TMP_EA);\
-		if (TMP_SWORD == 0) then \
-			GPR[0] = (2 << 16) + 38;\
-		endif;\
-		if (TFLAG == 1) then\
-			NIA = TMP_SWORD & 0xFFFFFFFE;\
-		else\
-			NIA = TMP_SWORD & 0xFFFFFFFC;\
-		endif;\
-		TMP_START_ADDR = TMP_START_ADDR+4;
-
-macro LDMIB3_NIA() = \
-		TMP_START_ADDR = TMP_START_ADDR+4;\
-		TMP_EA = TMP_START_ADDR;\
-		TMP_SWORD = GetWord(TMP_EA);\
-		if (TMP_SWORD == 0) then \
-			GPR[0] = (2 << 16) + 38;\
-		endif;\
-		if (TFLAG == 1) then\
-			NIA = TMP_SWORD & 0xFFFFFFFE;\
-		else\
-			NIA = TMP_SWORD & 0xFFFFFFFC;\
-		endif;
-
-
-macro LDMDB3_NIA() = \
-		TMP_START_ADDR = TMP_START_ADDR+4;\
-		TMP_EA = TMP_START_ADDR;\
-		TMP_SWORD = GetWord(TMP_EA);\
-		if (TMP_SWORD == 0) then \
-			GPR[0] = (2 << 16) + 38;\
-		endif;\
-		if (TFLAG == 1) then\
-			NIA = TMP_SWORD & 0xFFFFFFFE;\
-		else\
-			NIA = TMP_SWORD & 0xFFFFFFFC;\
-		endif;
