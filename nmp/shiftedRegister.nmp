@@ -146,29 +146,29 @@ mode regShift(shiftAmt: REG_INDEX, shiftKind: u2, r: REG_INDEX) =
 	reg_shift_result(shiftKind, Get_ARM_GPR(shiftAmt), Get_ARM_GPR(r))
 	syntax = format("%s, %s %s", r.syntax,
 		switch (shiftKind) {
-			case LSL: 'LSL'
-			case LSR: 'LSR'
-			case ASR: 'ASR'
-			case ROR: 'ROR'
+			case LSL: "lsl"
+			case LSR: "lsr"
+			case ASR: "asr"
+			case ROR: "ror"
 		},
 		shiftAmt.syntax)
 	image  = format("%s 0 %2b 1 %s", shiftAmt.image, shiftKind, r.image)
 	carry_out = reg_shift_carry(shiftKind, Get_ARM_GPR(shiftAmt), Get_ARM_GPR(r))
 		
 
-// WARNING! if r15 is specified as r, the value used is the current instruction's address + 8	
+// WARNING! if r15 is specified as r, the value used is the current instruction"s address + 8	
 mode immShift(shiftAmt: u5, shiftKind: u2, r: REG_INDEX) =
 	imm_shift_result(shiftKind, shiftAmt, Get_ARM_GPR(r))
 	syntax = format("%s, %s #%d", r.syntax,
 		switch (shiftKind) {
-		case LSL: 'LSL'
-		case LSR: 'LSR'
-		case ASR: 'ASR'
+		case LSL: "lsl"
+		case LSR: "lsr"
+		case ASR: "asr"
 		case ROR: 
 			if (shiftAmt != 0) then
-				'ROR'
+				"ror"
 			else   
-				'RRX'
+				"rrx"
 			endif
 		}, shiftAmt)
 	image  = format("%5b %2b 0 %s", shiftAmt, shiftKind, r.image)

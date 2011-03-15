@@ -6,14 +6,14 @@
 
 
 op setRon()
-	syntax = "SPSR"
+	syntax = "spsr"
 	image = "1"
 	action = {
 		RBIT = 1;
 	}
 
 op setRoff()
-	syntax = "CPSR"
+	syntax = "cpsr"
 	image = "0"
 	action = {
 		RBIT = 0;
@@ -23,7 +23,7 @@ op setRoff()
 //S bit 
 ///////////////////////////////////
 op setSon()
-	syntax = "S"
+	syntax = "s"
 	image = "1"
 	action = {
 		SBIT = 1;
@@ -138,14 +138,14 @@ op setWoff()
 op setLMem = setLMemon | setLMemoff
 
 op setLMemon()
-	syntax = "LD"
+	syntax = "ld"
 	image = "1"
 	action = {
 		LBIT = 1;
 	}
 
 op setLMemoff()
-	syntax = "ST"
+	syntax = "st"
 	image = "0"
 	action = {
 		LBIT = 0;
@@ -154,7 +154,7 @@ op setLMemoff()
 op setL = setLon | setLoff
 
 op setLon()
-	syntax = "L"
+	syntax = "l"
 	image = "1"
 	action = {
 		LBIT = 1;
@@ -206,7 +206,7 @@ reg DBMODE[1,u1]
 // STMIA/LDMIA
 ///////////////////////////////////////////
 mode ia()
-     syntax = "IA"
+     syntax = "ia"
      image = "01"
      action = {
 	    IAMODE = 1;
@@ -219,7 +219,7 @@ mode ia()
 // STMIB/LDMIB
 ///////////////////////////////////////////
 mode ib()
-     syntax = "IB"
+     syntax = "ib"
      image = "11"
      action = {
 	    IAMODE = 0;
@@ -232,7 +232,7 @@ mode ib()
 // STMDA/LDMDA
 ///////////////////////////////////////////
 mode da()
-     syntax = "DA"
+     syntax = "da"
      image = "00"
      action = {
 	    IAMODE = 0;
@@ -245,7 +245,7 @@ mode da()
 // STMDB/LDMDB
 ///////////////////////////////////////////
 mode db()
-     syntax = "DB"
+     syntax = "db"
      image = "10"
      action = {
 	    IAMODE = 0;
@@ -433,7 +433,7 @@ mode IMM24(n: s24) = n
 // Branch instruction, conditional if L bit is set
 ///////////////////////////////////////////
 op B_Cond(cond : condition, setl : u1, signed_immed_24 : IMM24)
-	syntax = format("B%s%s %x", if setl then "L" else "" endif, cond.syntax, __IADDR + 8 + (coerce(int(30), signed_immed_24) :: 0b00))
+	syntax = format("b%s%s %x", if setl then "l" else "" endif, cond.syntax, __IADDR + 8 + (coerce(int(30), signed_immed_24) :: 0b00))
 	image = format("%s101%1b%s", cond.image, setl, signed_immed_24.image) 
 	action = {	        
 		if (cond) then
@@ -454,7 +454,7 @@ op B_Cond(cond : condition, setl : u1, signed_immed_24 : IMM24)
 	}
 
 op BX_ARM(cond : condition, rd : REG_INDEX)
-	syntax = format("BX%s %s", cond.syntax, rd.syntax)
+	syntax = format("bx%s %s", cond.syntax, rd.syntax)
 	image  = format("%s000100101111111111110001%s", cond.image, rd.image) 
 	action = {
 		if (cond) then 
@@ -493,31 +493,31 @@ macro ldst_shift_result(r, shiftKind, shiftAmt) = \
 mode loadstoreSpecifiedShift(shiftAmt: u5, shiftKind: u2, r: REG_INDEX) = ldst_shift_result(r, shiftKind, shiftAmt)
 	syntax = format("%s, %s #%d", r.syntax, 
 	switch (shiftKind) {
-		case LSL: 'LSL'
-		case LSR: 'LSR'
-		case ASR: 'ASR'
-		case ROR: 'ROR' }, 
+		case LSL: "lsl"
+		case LSR: "lsr"
+		case ASR: "asr"
+		case ROR: "ror" }, 
 	shiftAmt)
 	image  = format("%5b %2b 0 %s", shiftAmt, shiftKind, r.image)
 
 
 op Mem_load_store_imm(cond : condition, setpre : u1, setu : u1,setb : u1,setw : u1,setl : u1, rn : REG_INDEX, rd : REG_INDEX ,offset12 : OFFSET_12)
-	syntax = format("%sR%s%s%s %s, [%s%s,%s%s%s%s",
-		if setl then 'LD' else 'ST' endif ,
+	syntax = format("%sr%s%s%s %s, [%s%s,%s%s%s%s",
+		if setl then "ld" else "st" endif ,
 		cond.syntax,
-		if setb then 'B' else '' endif ,
+		if setb then "b" else "" endif ,
 		if setw then 
-			if (setpre == 0) then  'T'					 
-			else		  ''
+			if (setpre == 0) then  "T"					 
+			else		  ""
 			endif
-		else '' endif,
+		else "" endif,
 		rd.syntax,
 		rn.syntax,
-		if setpre then '' else ']' endif ,
-		if setu then '' else '-' endif ,
+		if setpre then "" else "]" endif ,
+		if setu then "" else "-" endif ,
 		offset12.syntax,
-		if setpre then ']' else '' endif ,
-		if setw then '!' else '' endif ) 
+		if setpre then "]" else "" endif ,
+		if setw then "!" else "" endif ) 
 
 	image = format("%s010%1b%1b%1b%1b%1b%s%s%s", cond.image, setpre,
 		setu, setb, setw, setl, rn.image,rd.image,offset12.image)
@@ -570,26 +570,26 @@ op Mem_load_store_shr(cond : condition, setpre : u1, setu :
 			 REG_INDEX, rd : REG_INDEX ,shifter_operand
 			 :loadstoreSpecifiedShift)
 			 
-	syntax = format("%sR%s%s%s %s, [%s%s, %s%s%s%s",
-		if setl then 'LD' else 'ST' endif,
+	syntax = format("%sr%s%s%s %s, [%s%s, %s%s%s%s",
+		if setl then "ld" else "st" endif,
 			cond.syntax,
-		if setb then 'B' else '' endif,
+		if setb then "b" else "" endif,
 		if setw then 
 			if (setpre == 0) then  
-				'T'					 
+				"t"					 
 			else		  
-				''
+				""
 			endif
 		else 
-			'' 
+			"" 
 		endif,
 		rd.syntax,
 		rn.syntax,
-		if setpre then '' else ']' endif,
-		if setu then '' else '-' endif ,
+		if setpre then "" else "]" endif,
+		if setu then "" else "-" endif ,
 		shifter_operand.syntax,
-		if setpre then ']' else '' endif,
-		if setw then '!' else '' endif )
+		if setpre then "]" else "" endif,
+		if setw then "!" else "" endif )
 
 
 	image = format("%s011%1b%1b%1b%1b%1b%s%s%s", cond.image, setpre,
@@ -641,15 +641,15 @@ op Mem_load_store_shr(cond : condition, setpre : u1, setu :
 
 op STRH_imm(cond: condition, setpre: u1,setu:u1,setw:u1,rn : REG_INDEX, rd :	 REG_INDEX , immh: u4, imml:u4)
 
-	syntax = format("STR%sH %s, [%s%s,%s#%d%s%s",
+	syntax = format("str%sh %s, [%s%s,%s#%d%s%s",
 		cond.syntax, 
 		rd.syntax,
 		rn.syntax,
-		if setpre then '' else ']' endif,
-		if setu then '' else '-' endif,
+		if setpre then "" else "]" endif,
+		if setu then "" else "-" endif,
 		immh::imml,
-		if setpre then ']' else '' endif,
-		if setw then '!' else '' endif )
+		if setpre then "]" else "" endif,
+		if setw then "!" else "" endif )
  
 	image = format("%s000%1b%1b1%1b0%s%s%4b1011%4b", cond.image, setpre,setu, setw,rn.image,rd.image,immh,imml)
 	action = {
@@ -677,15 +677,15 @@ op STRH_imm(cond: condition, setpre: u1,setu:u1,setw:u1,rn : REG_INDEX, rd :	 RE
 
 
 op STRH_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_INDEX , rm: REG_INDEX)
-	syntax = format("STR%sH %s, [%s%s,%s%s%s%s",
+	syntax = format("str%sh %s, [%s%s,%s%s%s%s",
 		cond.syntax, 
 		rd.syntax,
 		rn.syntax,
-		if setpre then '' else ']' endif,
-		if setu then '' else '-' endif ,
+		if setpre then "" else "]" endif,
+		if setu then "" else "-" endif ,
 		rm.syntax,
-		if setpre then ']' else '' endif,
-		if setw then '!' else '' endif )
+		if setpre then "]" else "" endif,
+		if setw then "!" else "" endif )
 
 	image = format("%s000%1b%1b0%1b0%s%s00001011%s", cond.image,
 				setpre,setu, setw,rn.image,rd.image,rm.image)
@@ -714,15 +714,15 @@ op STRH_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_
 
 
 op LDRH_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_INDEX , immh: u4, imml:u4)
-	syntax = format("LDR%sH %s, [%s%s,%s#%d%s%s",
+	syntax = format("ldr%sh %s, [%s%s,%s#%d%s%s",
 		cond.syntax, 
 		rd.syntax,
 		rn.syntax,
-		if setpre then '' else ']' endif,
-		if setu then '' else '-' endif,
+		if setpre then "" else "]" endif,
+		if setu then "" else "-" endif,
 		immh::imml,
-		if setpre then ']' else '' endif,
-		if setw then '!' else '' endif )
+		if setpre then "]" else "" endif,
+		if setw then "!" else "" endif )
 	 
 
 	image = format("%s000%1b%1b1%1b1%s%s%4b1011%4b", cond.image, setpre,setu, setw,rn.image,rd.image,immh,imml)
@@ -753,15 +753,15 @@ op LDRH_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_
 
 op LDRH_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_INDEX , rm: REG_INDEX)
 
-	syntax = format("LDR%sH %s, [%s%s,%s%s%s%s",
+	syntax = format("ldr%sh %s, [%s%s,%s%s%s%s",
 		cond.syntax, 
 		rd.syntax,
 		rn.syntax,
-		if setpre then '' else ']' endif,
-		if setu then '' else '-' endif ,
+		if setpre then "" else "]" endif,
+		if setu then "" else "-" endif ,
 		rm.syntax,
-		if setpre then ']' else '' endif,
-		if setw then '!' else '' endif )
+		if setpre then "]" else "" endif,
+		if setw then "!" else "" endif )
 	image = format("%s000%1b%1b0%1b1%s%s00001011%s", cond.image, setpre,setu, setw,rn.image,rd.image,rm.image)
 
 	action = {
@@ -791,15 +791,15 @@ op LDRH_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_
 
 op LDRSB_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_INDEX , immh: u4, imml:u4)
 
-	syntax = format("LDR%sSB %s, [%s%s,%s#%d%s%s",
+	syntax = format("ldr%ssb %s, [%s%s,%s#%d%s%s",
 		cond.syntax, 
 		rd.syntax,
 		rn.syntax,
-		if setpre then '' else ']' endif,
-		if setu then '' else '-' endif,
+		if setpre then "" else "]" endif,
+		if setu then "" else "-" endif,
 		immh::imml,
-		if setpre then ']' else '' endif,
-		if setw then '!' else '' endif )
+		if setpre then "]" else "" endif,
+		if setw then "!" else "" endif )
 
 	image = format("%s000%1b%1b1%1b1%s%s%4b1101%4b", cond.image, setpre,setu, setw,rn.image,rd.image,immh,imml)
 	action = {
@@ -826,15 +826,15 @@ op LDRSB_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG
        }
 
 op LDRSB_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd :REG_INDEX , rm: REG_INDEX)
-	syntax = format("LDR%sSB %s, [%s%s,%s%s%s%s",
+	syntax = format("ldr%ssb %s, [%s%s,%s%s%s%s",
 		cond.syntax, 
 		rd.syntax,
 		rn.syntax,
-		if setpre then '' else ']' endif,
-		if setu then '' else '-' endif ,
+		if setpre then "" else "]" endif,
+		if setu then "" else "-" endif ,
 		rm.syntax,
-		if setpre then ']' else '' endif,
-		if setw then '!' else '' endif )
+		if setpre then "]" else "" endif,
+		if setw then "!" else "" endif )
 
 	image = format("%s000%1b%1b0%1b1%s%s00001101%s", cond.image, setpre,setu, setw,rn.image,rd.image,rm.image)
 
@@ -864,15 +864,15 @@ op LDRSB_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd :REG_
 
 op LDRSH_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd :REG_INDEX , immh: u4, imml:u4)
 
-	syntax = format("LDR%sSH %s, [%s%s,%s#%d%s%s",
+	syntax = format("ldr%ssh %s, [%s%s,%s#%d%s%s",
 	cond.syntax, 
 		rd.syntax,
 		rn.syntax,
-		if setpre then '' else ']' endif,
-		if setu then '' else '-' endif,
+		if setpre then "" else "]" endif,
+		if setu then "" else "-" endif,
 		immh::imml,
-		if setpre then ']' else '' endif,
-		if setw then '!' else '' endif )
+		if setpre then "]" else "" endif,
+		if setw then "!" else "" endif )
 
 	image = format("%s000%1b%1b1%1b1%s%s%4b1111%4b", cond.image, setpre,setu, setw,rn.image,rd.image,immh,imml)
 
@@ -900,15 +900,15 @@ op LDRSH_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd :REG_
        }
 
 op LDRSH_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_INDEX , rm: REG_INDEX)
-	syntax = format("LDR%sSH %s, [%s%s,%s%s%s%s",
+	syntax = format("ldr%ssh %s, [%s%s,%s%s%s%s",
 		cond.syntax, 
 		rd.syntax,
 		rn.syntax,
-		if setpre then '' else ']' endif,
-		if setu then '' else '-' endif ,
+		if setpre then "" else "]" endif,
+		if setu then "" else "-" endif ,
 		rm.syntax,
-		if setpre then ']' else '' endif,
-		if setw then '!' else '' endif )
+		if setpre then "]" else "" endif,
+		if setw then "!" else "" endif )
 
 	image = format("%s000%1b%1b0%1b1%s%s00001111%s", cond.image, setpre,setu, setw,rn.image,rd.image,rm.image)
 
@@ -944,7 +944,7 @@ op LDRSH_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG
 ///////////////////////////////////////////
 
 op SWI(cond : condition, Immed_24: IMM24)
-	syntax = format("SWI%s %s", cond.syntax, Immed_24.syntax)
+	syntax = format("swi%s %s", cond.syntax, Immed_24.syntax)
 	image = format("%s1111%s",cond.image,Immed_24.image)
 	action = 
 	{ 
@@ -967,7 +967,7 @@ op SWI(cond : condition, Immed_24: IMM24)
 
 
 op MLA(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, rs : REG_INDEX, rm : REG_INDEX)
-	syntax = format("MLA%s%s %s, %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rm.syntax, rs.syntax, rn.syntax)
+	syntax = format("mla%s%s %s, %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rm.syntax, rs.syntax, rn.syntax)
 	image = format("%s0000001%s%s%s%s1001%s", cond.image,sets.image, rd.image, rn.image, rs.image, rm.image)
 	action = {
 		if (cond) then
@@ -990,7 +990,7 @@ op MLA(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, rs : REG_I
 		endif;
 	}
 op MUL(cond : condition, sets : setS, rd : REG_INDEX, rs : REG_INDEX, rm : REG_INDEX)
-	syntax = format("MUL%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rm.syntax, rs.syntax)
+	syntax = format("mul%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rm.syntax, rs.syntax)
 	image = format("%s0000000%s%s0000%s1001%s", cond.image,sets.image, rd.image, rs.image, rm.image)
 	action = {
 			if (cond) then
@@ -1016,7 +1016,7 @@ op MUL(cond : condition, sets : setS, rd : REG_INDEX, rs : REG_INDEX, rm : REG_I
 	}
 
 op SMULL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : REG_INDEX, rm : REG_INDEX)
-	syntax = format("SMULL%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
+	syntax = format("smull%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
 	image = format("%s0000110%s%s%s%s1001%s",cond.image,sets.image,rdhi.image,rdlo.image,rs.image,rm.image)
 	action = { 
 		if (cond) then
@@ -1044,7 +1044,7 @@ op SMULL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : 
 	}
 
 op UMULL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : REG_INDEX, rm : REG_INDEX)
-	syntax = format("UMULL%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
+	syntax = format("umull%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
 	image = format("%s0000100%s%s%s%s1001%s",cond.image,sets.image,rdhi.image,rdlo.image,rs.image,rm.image)
 	action = {
 		if (cond) then
@@ -1072,7 +1072,7 @@ op UMULL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : 
 	}
 
 op SMLAL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : REG_INDEX, rm : REG_INDEX)
-	syntax = format("SMLAL%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
+	syntax = format("smlal%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
 	image = format("%s0000111%s%s%s%s1001%s",cond.image,sets.image,rdhi.image,rdlo.image,rs.image,rm.image)
    action = {
 		if (cond) then
@@ -1103,7 +1103,7 @@ op SMLAL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : 
 	}
 
 op UMLAL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : REG_INDEX, rm : REG_INDEX)
-	syntax = format("UMLAL%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
+	syntax = format("umlal%s%s %s,%s,%s,%s",cond.syntax,sets.syntax,rdlo.syntax,rdhi.syntax,rm.syntax,rs.syntax)
 	
 	image = format("%s0000101%s%s%s%s1001%s",cond.image,sets.image,rdhi.image,rdlo.image,rs.image,rm.image)
 
@@ -1141,7 +1141,7 @@ op UMLAL(cond : condition, sets : setS, rdhi : REG_INDEX, rdlo : REG_INDEX,rs : 
 
 
 op SWP(cond : condition, setb : setB, rn:REG_INDEX, rd:REG_INDEX, rm:REG_INDEX)
-	syntax = format("SWP%s%s %s, %s, [%s]", cond.syntax, setb.syntax, rd.syntax, rm.syntax ,rn.syntax)
+	syntax = format("swp%s%s %s, %s, [%s]", cond.syntax, setb.syntax, rd.syntax, rm.syntax ,rn.syntax)
 	image = format("%s00010%s00%s%s00001001%s",cond.image,setb.image,rn.image,rd.image,rm.image)
 	action = {
 		setb.action;
@@ -1160,7 +1160,7 @@ op SWP(cond : condition, setb : setB, rn:REG_INDEX, rd:REG_INDEX, rm:REG_INDEX)
 ///////////////////////////////////////////
 
 op CLZ(cond :condition, rd:REG_INDEX, rm:REG_INDEX)
-	syntax = format("CLZ%s %s, %s", cond.syntax, rd.syntax, rm.syntax)
+	syntax = format("clz%s %s, %s", cond.syntax, rd.syntax, rm.syntax)
 	image = format("%s000101101111%s11110001%s",cond.image,rd.image,rm.image)
 	action = {
 		if (cond) then	
@@ -1195,7 +1195,7 @@ op CLZ(cond :condition, rd:REG_INDEX, rm:REG_INDEX)
 // IV Miscellaneous Instructions (CPSR/SPSR)
 ///////////////////////////////////////////
 op MSR_imm(cond : condition,  setr : setR, fm : field_mask, shifter_operand : rotatedImmediate)
-	syntax = format("MSR%s %s_%s, %s", cond.syntax, setr.syntax,fm.syntax, shifter_operand.syntax)
+	syntax = format("msr%s %s_%s, %s", cond.syntax, setr.syntax,fm.syntax, shifter_operand.syntax)
 	image = format("%s00110%s10%s1111%s", cond.image, setr.image, fm.image, shifter_operand.image)
 	action = {
 		if (cond) then
@@ -1235,7 +1235,7 @@ op MSR_imm(cond : condition,  setr : setR, fm : field_mask, shifter_operand : ro
 	}
 
 op MSR_shr(cond : condition,  setr : setR, fm : field_mask, rn : REG_INDEX)
-	syntax = format("MSR%s %s_%s, %s", cond.syntax, setr.syntax, fm.syntax, rn.syntax)
+	syntax = format("msr%s %s_%s, %s", cond.syntax, setr.syntax, fm.syntax, rn.syntax)
 	
 	image = format("%s00010%s10%s111100000000%s",cond.image, setr.image, fm.image, rn.image)
 	
@@ -1281,7 +1281,7 @@ op MSR_shr(cond : condition,  setr : setR, fm : field_mask, rn : REG_INDEX)
 	}
 
 op MRS(cond : condition,  setr : setR, rn : REG_INDEX)
-	syntax = format("MRS%s %s, %s", cond.syntax, rn.syntax ,setr.syntax)
+	syntax = format("mrs%s %s, %s", cond.syntax, rn.syntax ,setr.syntax)
 	image = format("%s00010%s001111%s000000000000", cond.image, setr.image, rn.image)
    action = {
 		if (cond) then

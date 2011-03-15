@@ -12,31 +12,19 @@ macro GetHalfWord(BASE_ADDR) = M16[BASE_ADDR]
 
 macro LDRB(rd) = \
 		TMP_EA = TMP_REG2;\
-		if (rd == 15) && (M[TMP_EA] == 0) then\
-		GPR[0] = (2 << 16) + 38;\
-		endif;\
+		// !!WARNING!! rd == r15 ==> result unpredictable
 		Set_ARM_GPR(rd,M[TMP_EA]);\
-		if (TMP_EA == 0xFFF004C) then\
-			SetWord(TMP_EA,0x00000000);\
-		endif;\
-		if (TMP_EA == 0xFFE0020) then\
-			SetWord(TMP_EA,0x00000000);\
-		endif;
 
 
 macro LDR(rd) = \
 		TMP_EA = TMP_REG2;\
 		TMP_SWORD = GetWord(TMP_EA);\
-		if (rd == 15) && (TMP_SWORD == 0) then\
-		GPR[0] = (2 << 16) + 38;\
+		if (rd == 15) then\
+			NIA = TMP_SWORD & 0xFFFFFFFE; \
+			TFLAG = TMP_SWORD<0..0>; \
+		else \
+			Set_ARM_GPR(rd,TMP_SWORD);\
 		endif;\
-		Set_ARM_GPR(rd,TMP_SWORD);\
-		if (TMP_EA == 0xFFF004C) then\	
-			SetWord(TMP_EA,0x00000000);\
-		endif;\
-		if (TMP_EA == 0xFFE0020) then\	
-			SetWord(TMP_EA,0x00000000);\
-		endif;
 
 
 macro STRB() = \
@@ -66,7 +54,7 @@ macro LDRH() = \
 			TMP_HALF = 0;\
 		// not aligned UNPREDICTABLE
 		endif;\
-		TMP_REG1 = TMP_HALF;\
+		TMP_REG1 = coerce(u16, TMP_HALF);\
 		if (rd == 15) && (TMP_REG1 == 0) then\
 			GPR[0] = (2 << 16) + 38;\
 		endif;\
@@ -75,36 +63,13 @@ macro LDRH() = \
 macro LDRSB() = \
       TMP_EA = TMP_REG2;\
       TMP_BYTE = M[TMP_EA];\
-      if TMP_BYTE<7..7> == 1 then\
-         TMP_REG1 = 0xFFFFFFFF;\
-         TMP_REG1<7..0> = TMP_BYTE;\
-      else\
-        TMP_REG1 = TMP_BYTE;\
-      endif;\
-      TMP_REG1<7..0> = TMP_BYTE;\
-      if (rd == 15) && (TMP_REG1 == 0) then\
-         GPR[0] = (2 << 16) + 38;\
-      endif;\
-      Set_ARM_GPR(rd,TMP_REG1);\
+      Set_ARM_GPR(rd, coerce(s32, TMP_BYTE));\
+
 
 macro LDRSH() = \
       TMP_EA = TMP_REG2;\
-      if TMP_EA<0..0> == 0 then \
-          TMP_HALF = GetHalfWord(TMP_EA);\
-      else\
-          TMP_HALF = 0;\
-	  // not aligned UNPREDICTABLE
-      endif;\
-      if TMP_HALF<15..15> == 1 then\
-         TMP_REG1 = 0xFFFFFFFF;\
-	 TMP_REG1<15..0> = TMP_HALF;\
-      else\
-         TMP_REG1 = TMP_HALF;\
-      endif;\
-      if (rd == 15) && (TMP_REG1 == 0) then\
-         GPR[0] = (2 << 16) + 38;\
-      endif;\
-      Set_ARM_GPR(rd,TMP_REG1);
+      TMP_HALF = M[TMP_EA];\
+      Set_ARM_GPR(rd, coerce(s32, TMP_HALF));\
 
 
 
