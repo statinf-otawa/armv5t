@@ -5,7 +5,7 @@ GLISS2_ATTR=$(GLISS2_PREFIX)/gep/gliss-attr
 NMP2NML=$(GLISS2_PREFIX)/gep/gliss-nmp2nml.pl
 
 GNU_TARGET=arm-elf
-GDB_TARGET_PATH=$(HOME)/Cross/arm-elf/bin
+GDB_TARGET_PATH=/home/traces/Arm/bin
 GDB_NAME=$(GDB_TARGET_PATH)/$(GNU_TARGET)-gdb
 PROC_NAME=arm
 

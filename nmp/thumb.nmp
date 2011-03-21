@@ -1377,7 +1377,7 @@ op SUB_reg_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm: REG_THUMB_INDE
 
 
 op SUB_imm3_thumb( imm: IMM7)
-	syntax = format("SUB SP, %s * 4", imm.syntax)
+	syntax = format("sub sp, %s * 4", imm.syntax)
 	image = format("101100001%s", imm.image)
 	action = {
 		TMP_REG1 = Get_ARM_GPR(13);
@@ -1387,7 +1387,7 @@ op SUB_imm3_thumb( imm: IMM7)
 
 
 op SWI_thumb(imm: IMM8)
-   syntax = format("SWI %s", imm.syntax)
+   syntax = format("swi %s", imm.syntax)
    image = format("11011111%s",imm.image)
    action = 
 	{
@@ -1407,7 +1407,7 @@ op SWI_thumb(imm: IMM8)
 
 
 op TST_thumb(rn : REG_THUMB_INDEX, rm: REG_THUMB_INDEX)
-   syntax = format("TST %s, %s",  rn.syntax, rm.syntax)
+   syntax = format("tst %s, %s",  rn.syntax, rm.syntax)
    image = format("0100001000%s%s", rm.image,  rn.image)
    action = {
 	  TMP_REG2 = GPR[rn];

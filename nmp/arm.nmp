@@ -94,7 +94,7 @@ op init ()
 ////////////////////////////////////////////////////
 
 
-op multi = ARM //| THUMB
+op multi = ARM | THUMB
 
 op ARM(x : ARM_instr)
 	image = x.image

@@ -32,19 +32,19 @@ op setBoff()
 ///////////////////////////////////////////
 
 op  Mem_load_store_multiple(cond: condition, adr_mode: u2, sets: u1, setw: u1, setl: u1, rn: REG_INDEX, reglist: REG_LIST)
-	syntax = format("%sM%s%s %s%s, {%s}%s",
-		if setl then 'LD' else 'ST' endif,
+	syntax = format("%sm%s%s %s%s, {%s}%s",
+		if setl then "ld" else "st" endif,
 		cond.syntax,
 		switch (adr_mode) {
-			case 1: 'IA'
-			case 3:	'IB'
-			case 0:	'DA'
-			case 2: 'DB'
+			case 1: "ia"
+			case 3:	"ib"
+			case 0:	"da"
+			case 2: "db"
 		},
 		rn.syntax,
-		if setw then '!' else '' endif,
+		if setw then "!" else "" endif,
 		reglist.syntax,
-		if sets then '^' else '' endif)
+		if sets then "^" else "" endif)
 
 	image = format("%s100%2b%1b%1b%1b%s%16b", cond.image, adr_mode,sets, setw, setl,rn.image, reglist) 
 
