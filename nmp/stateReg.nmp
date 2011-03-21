@@ -1,5 +1,5 @@
 // Register file
-reg GPR[GPRNum, u32]
+reg GPR[GPRNum, u32] __attr(fmt("R%d"))
 
 
 // Current Program Status Register
