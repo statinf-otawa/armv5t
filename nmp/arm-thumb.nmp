@@ -29,13 +29,17 @@ include "modes.nmp"
 ////////////////////////////////////////////////////
 
 
-op instruction(x : ARM_instr)
+op multi = ARM | THUMB
+
+op ARM(x : ARM_instr)
 	image = x.image
 	syntax = x.syntax
 	action = {
 		NIA = NIA + 4;
 		x.action;
 	}
+	instruction_set_select = TFLAG == 0
+	instruction_set_name = "ARM"
           
 op ARM_instr = dataProcessing 
 	| branch 
@@ -119,7 +123,6 @@ op sra = MSR_imm | MSR_shr | MRS
 ////////////////////////
 include "condition.nmp"
 ////////////////////////
-
 
 
 

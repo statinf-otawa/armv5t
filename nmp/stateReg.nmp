@@ -1,3 +1,29 @@
+
+// constants
+let LSL = 0
+let LSR = 1
+let ASR = 2
+let ROR = 3
+
+// No of user registers
+let GPRNum = 32
+
+// No of spsr registers
+let SPSRNum = 5
+
+// Dont switch to high Vector
+let hivector = 0 
+
+//Mode of a ARM Processor
+let mode_user       = 0b10000
+let mode_FIQ        = 0b10001
+let mode_IRQ        = 0b10010
+let mode_supervisor = 0b10011
+let mode_abort      = 0b10111
+let mode_undefined  = 0b11011
+let mode_system     = 0b11111
+
+
 // Register file
 reg GPR[GPRNum, u32]
 	fmt = "R%d"
@@ -103,4 +129,35 @@ reg TBIT [1, u1] alias = Ucpsr<5..5>
 
 //Determine the mode in which the processor operates
 reg MBITS [1, u5] alias  = Ucpsr<4..0>
+
+// Program Counters
+reg NIA[1, s32]    alias = GPR[15] pc = 1
+
+
+///////////////////////////////////////////
+// Intial Values of some registers
+///////////////////////////////////////////
+op init ()
+	action = { 
+		NIA = 0x2000;
+		//CIA = 0x2000;
+		//PIA = 0x2000;
+
+		//LR
+		GPR[14]=0x2000;
+		TFLAG = 0;
+		//SP
+		GPR[13]=0x800; 
+		GPR[21]=0x600; 
+		GPR[23]=0x400; 
+		GPR[25]=0x200;    
+		GPR[27]=0x1000; 
+		GPR[29]=0x1200; 
+		//CPSR in SuperVisor mode   
+		Ucpsr = 0x13;
+		
+		// sp init for validator
+		// same vales as gdb
+		GPR[13 + 10] = 0x800;
+	 }
 
