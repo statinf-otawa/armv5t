@@ -22,6 +22,7 @@ mode REG_INDEX(r: index) = r
 				case 15:"pc" 
 			})
 	image  = format("%4b", r)
+	number = r
 
 
 
