@@ -21,8 +21,13 @@ WITH_EABI		= 1	# comment it to enable EABI support (no system call)
 WITH_DISASM		= 1	# comment it to prevent disassembler building
 WITH_SIM		= 1	# comment it to prevent simulator building
 WITH_THUMB		= 1	# comment it to prevent use of THUMB mode
+#WITH_DYNLIB		= 1 # uncomment it to link in dynamic library
 
 # definitions
+ifdef WITH_DYNLIB
+REC_FLAGS = WITH_DYNLIB=1
+endif
+
 GFLAGS= \
 	-m loader:old_elf \
 	-m code:code \
@@ -87,7 +92,7 @@ src include: arm.irg
 	$(GLISS_PREFIX)/gep/gep $(GFLAGS) $<
 
 lib: src include/arm/config.h src/disasm.c
-	(cd src; make)
+	(cd src; make $(REC_FLAGS))
 
 arm-disasm:
 	cd disasm; make
