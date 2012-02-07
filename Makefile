@@ -49,17 +49,18 @@ endif
 NMP = \
 	nmp/$(MAIN_NMP) \
 	nmp/condition.nmp \
+	nmp/control.nmp \
 	nmp/dataProcessingMacro.nmp \
 	nmp/dataProcessing.nmp \
+	nmp/loadstore.nmp \
 	nmp/loadStoreM.nmp \
 	nmp/loadStoreM_Macro.nmp \
-	nmp/othersInstr.nmp \
-	nmp/othersInstrMacro.nmp \
+	nmp/mult.nmp \
 	nmp/shiftedRegister.nmp \
 	nmp/simpleType.nmp \
 	nmp/stateReg.nmp \
-	nmp/tempVar.nmp \
-	nmp/control.nmp
+	nmp/system.nmp \
+	nmp/tempVar.nmp
 
 
 # goals definition
