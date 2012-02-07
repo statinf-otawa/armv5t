@@ -1,0 +1,121 @@
+//
+// GLISS V2 -- ARM branch instructions
+// Copyright (c) 2010, IRIT - UPS <casse@irit.fr>
+//
+// This file is part of GLISS2.
+//
+// GLISS2 is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// GLISS2 is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with GLISS2; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+//
+
+op MSR_imm(cond: condition,  setr: setR, fm: field_mask, shifter_operand: rotatedImmediate)
+	syntax = format("msr%s %s_%s, %s", cond.syntax, setr.syntax,fm.syntax, shifter_operand.syntax)
+	image = format("%s00110%s10%s1111%s", cond.image, setr.image, fm.image, shifter_operand.image)
+	action = {
+		if (cond) then
+			setr.action;	
+			fm.action;
+			CFLAG = shifter_operand.carry_out;
+			TMP_REG3 = GetSPSR();
+			TMP_SWORD = shifter_operand;
+			if (RBIT == 0) then
+				if (PSRFMODE == 1) then 
+					Ucpsr<7..0> = TMP_SWORD<7..0>;
+				endif;
+				if (PSRSMODE == 1) then 
+					Ucpsr<15..8> = TMP_SWORD<15..8>;
+				endif;
+				if (PSRXMODE == 1) then 
+					Ucpsr<23..16> = TMP_SWORD<23..16>;
+				endif;
+				if (PSRCMODE == 1) then 
+					Ucpsr<31..24> = TMP_SWORD<31..24>;
+				endif;
+			else 
+				if (PSRFMODE == 1) then 
+					TMP_REG3<7..0> = TMP_SWORD<7..0>;
+				endif;
+				if (PSRSMODE == 1) then 
+					TMP_REG3<15..8> = TMP_SWORD<15..8>;
+				endif;
+				if (PSRXMODE == 1) then 
+					TMP_REG3<23..16> = TMP_SWORD<23..16>;
+				endif;
+				if (PSRCMODE == 1) then 
+					TMP_REG3<31..24> = TMP_SWORD<31..24>;
+				endif;
+			endif;
+		endif;			
+	}
+
+op MSR_shr(cond: condition,  setr: setR, fm : field_mask, rn: REG_INDEX)
+	syntax = format("msr%s %s_%s, %s", cond.syntax, setr.syntax, fm.syntax, rn.syntax)
+	
+	image = format("%s00010%s10%s111100000000%s",cond.image, setr.image, fm.image, rn.image)
+	
+	action = {
+		if (cond) then
+			setr.action;	
+			fm.action;
+			TMP_REG3 = GetSPSR();
+			TMP_SWORD = Get_ARM_GPR(rn);
+			if (RBIT == 0) then
+				if (PSRFMODE == 1) then 
+					Ucpsr<31..24> = TMP_SWORD<31..24>;
+				endif;
+				if (PSRSMODE == 1) then 
+					Ucpsr<23..16> = TMP_SWORD<23..16>;
+				endif;
+				if (PSRXMODE == 1) then 
+					Ucpsr<15..8> = TMP_SWORD<15..8>;
+				endif;
+				if (PSRCMODE == 1) then 
+					Ucpsr<7..0> = TMP_SWORD<7..0>;
+				endif;
+			else 
+				if (PSRFMODE == 1) then 
+					TMP_REG3<31..24> = TMP_SWORD<31..24>;
+					SetSPSR(TMP_REG3);
+				endif;
+				if (PSRSMODE == 1) then 
+					TMP_REG3<23..16> = TMP_SWORD<23..16>;
+					SetSPSR(TMP_REG3);
+				endif;
+				if (PSRXMODE == 1) then 
+					TMP_REG3<15..8> = TMP_SWORD<15..8>;
+					SetSPSR(TMP_REG3);
+				endif;
+				if (PSRCMODE == 1) then 
+					TMP_REG3<7..0> = TMP_SWORD<7..0>;
+					SetSPSR(TMP_REG3);
+				endif;
+			endif;
+		endif;			
+		
+	}
+
+op MRS(cond : condition,  setr : setR, rn : REG_INDEX)
+	syntax = format("mrs%s %s, %s", cond.syntax, rn.syntax ,setr.syntax)
+	image = format("%s00010%s001111%s000000000000", cond.image, setr.image, rn.image)
+   action = {
+		if (cond) then
+			setr.action;
+			if (RBIT == 0) then
+				Set_ARM_GPR(rn,Ucpsr);
+			else
+				TMP_REG3 = GetSPSR();
+				Set_ARM_GPR(rn,TMP_REG3);
+			endif;
+		endif;
+	}

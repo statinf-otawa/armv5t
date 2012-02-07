@@ -12,7 +12,7 @@ macro GetGPRUser(r) = \
 	endif
 
 // STM
-macro STM(rd, sets) = \
+macro STM_(rd, sets) = \
 		TMP_EA = TMP_START_ADDR;\
 		if (sets == 0) then\
 			TMP_SWORD = Get_ARM_GPR(rd);\

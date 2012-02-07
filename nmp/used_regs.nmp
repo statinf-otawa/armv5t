@@ -19,6 +19,8 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
+var i[1, card(32)]
+
 // modes
 
 extend condition
@@ -32,6 +34,9 @@ extend regShift
 
 extend immShift
 	used_regs = { "read"(GPR[r]); }
+
+extend loadstoreSpecifiedShift
+	used_regs = { "read"(GPR[r]); if shiftKind == ROR && shiftAmt == 0 then "read"(CPSR); endif; }
 
 
 // data processing instructions
@@ -85,7 +90,15 @@ extend MOV_imm, MVN_imm
 	}
 
 
-// control instructions
+extend CLZ
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rm]);
+		"write"(GPR[rd]);
+	}
+
+
+// ****** control instructions ******
 
 extend B_Cond
 	used_regs = { cond.used_regs; if setl then "write"(LR); endif; "write"(PC); }
@@ -95,4 +108,157 @@ extend BX_ARM
 
 extend SWI
 	used_regs = { "write"(R14_svc); "write"(SPSR_svc); "write"(PC); "write"(CPSR); }
-	
+
+
+// ****** memory instructions ******
+
+extend LDR_imm, LDRH_imm, LDRSB_imm, LDRSH_imm
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rn]);
+		"write"(GPR[rd]);
+		if setpre == 0 || setw == 1 then "write"(GPR[rn]); endif;
+	}
+
+extend STR_imm, STRH_imm
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rn]);
+		"read"(GPR[rd]);
+		if setpre == 0 || setw == 1 then "write"(GPR[rn]); endif;
+	}
+
+extend LDR_shr
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rn]);
+		"write"(GPR[rd]);
+		shifter_operand.used_regs;
+		if setpre == 0 || setw == 1 then "write"(GPR[rn]); endif;		
+	}
+
+extend LDRH_shr, LDRSB_shr, LDRSH_shr
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rn]);
+		"write"(GPR[rd]);
+		"read"(GPR[rm]);
+		if setpre == 0 || setw == 1 then "write"(GPR[rn]); endif;		
+	}
+
+extend STR_shr
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rn]);
+		"read"(GPR[rd]);
+		shifter_operand.used_regs;
+		if setpre == 0 || setw == 1 then "write"(GPR[rn]); endif;
+	}
+
+extend STRH_shr
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rn]);
+		"read"(GPR[rd]);
+		"read"(GPR[rm]);
+		if setpre == 0 || setw == 1 then "write"(GPR[rn]); endif;
+	}
+
+
+extend SWP
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rn]);
+		"read"(GPR[rm]);
+		"write"(GPR[rd]);
+	}
+
+
+// ****** multiplication instructions ******
+
+extend MLA
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rm]);
+		"read"(GPR[rs]);
+		"read"(GPR[rn]);
+		"write"(GPR[rd]);
+		sets.used_regs;
+	}
+
+extend MUL
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rm]);
+		"read"(GPR[rs]);
+		"write"(GPR[rd]);
+		sets.used_regs;
+	}
+
+extend SMULL, UMULL, SMLAL, UMLAL
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rm]);
+		"read"(GPR[rs]);
+		"write"(GPR[rdhi]);
+		"write"(GPR[rdlo]);
+		sets.used_regs;
+	}
+
+
+// ****** system instructions ******
+
+extend MSR_imm
+	used_regs = {
+		cond.used_regs;
+		"write"(CPSR);
+	}
+
+extend MSR_shr
+	used_regs = {
+		cond.used_regs;
+		"write"(CPSR);
+		"read"(GPR[rn]);
+	}
+
+extend MRS
+	used_regs = {
+		cond.used_regs;
+		"read"(CPSR);
+		"write"(GPR[rn]);
+	}
+
+
+// ****** multiple memory instructions ******
+
+extend LDM
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rn]);
+		if setw == 1 then "write"(GPR[rn]); endif;
+		i = 0;
+		used_regs_rec;
+	}
+	used_regs_rec = {
+		if i <= 15 then
+			if reglist<i..i> == 1 then "write"(GPR[i]); endif;
+			i = i + 1;
+			used_regs_rec;
+		endif;
+	}
+
+extend STM
+	used_regs = {
+		cond.used_regs;
+		"read"(GPR[rn]);
+		if setw == 1 then "write"(GPR[rn]); endif;
+		i = 0;
+		used_regs_rec;
+	}
+	used_regs_rec = {
+		if i <= 15 then
+			if reglist<i..i> == 1 then "read"(GPR[i]); endif;
+			i = i + 1;
+			used_regs_rec;
+		endif;
+	}

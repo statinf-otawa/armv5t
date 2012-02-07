@@ -84,7 +84,7 @@ op setR = setRon | setRoff
 ///////////////////////////////////////////
 // Load/Store Instructions Multiple
 ///////////////////////////////////////////
-op LoadStoreM = Mem_load_store_multiple
+op LoadStoreM = STM | LDM
 
 
 ///////////////////////////////////////////
@@ -138,6 +138,8 @@ include "dataProcessing.nmp"
 include "othersInstrMacro.nmp"
 include "control.nmp"
 include "loadstore.nmp"
+include "mult.nmp"
+include "system.nmp"
 include "othersInstr.nmp"
 
 /////////////////////////////
