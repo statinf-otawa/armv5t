@@ -19,6 +19,8 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
+macro UGet_ARM_GPR(r) = coerce(u32, Get_ARM_GPR(r))
+
 op MLA(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, rs : REG_INDEX, rm : REG_INDEX)
 	syntax = format("mla%s%s %s, %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rm.syntax, rs.syntax, rn.syntax)
 	image = format("%s0000001%s%s%s%s1001%s", cond.image,sets.image, rd.image, rn.image, rs.image, rm.image)

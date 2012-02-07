@@ -74,14 +74,12 @@ op LoadStore = LDR_imm | STR_imm | LDR_shr | STR_shr | STRH_imm
 ///////////////////////////////////
 //B bit for Load/Store instruction
 ///////////////////////////////////
-op setB = setBon | setBoff
 
 
 
 ///////////////////////////////////
 //R bit (for CPSR/SPSR Instructions)
 ///////////////////////////////////
-op setR = setRon | setRoff
 
 
 
@@ -138,12 +136,10 @@ include "dataProcessing.nmp"
 // others instructions //
 ////////////////////////
 
-include "othersInstrMacro.nmp"
 include "control.nmp"
 include "loadstore.nmp"
 include "mult.nmp"
 include "system.nmp"
-include "othersInstr.nmp"
 
 /////////////////////////////
 // loadStoreM instructions //

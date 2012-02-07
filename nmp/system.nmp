@@ -19,6 +19,220 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
+// ****** used modes ******
+
+macro SetSPSR(reg) = \
+	if (MBITS == mode_supervisor) then\
+		    Uspsr[0]=reg; \
+	else\
+		if (MBITS == mode_abort) then\
+			    Uspsr[1]=reg; \
+		else\
+			if (MBITS == mode_undefined) then\
+				    Uspsr[2]=reg; \
+			else\
+				if (MBITS == mode_IRQ) then\
+					    Uspsr[3]=reg; \
+				else\
+					if (MBITS == mode_FIQ) then\
+						    Uspsr[4]=reg; \
+					endif;\
+				endif;\
+			endif;\
+		endif;\
+	endif
+
+
+op fm_f()
+	syntax = "f" 
+	image  = "1000"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 0;
+		PSRXMODE = 0;
+		PSRCMODE = 0;
+		}
+
+op fm_s()
+	syntax = "s" 
+	image  = "0100"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 1;
+		PSRXMODE = 0;
+		PSRCMODE = 0;
+		}
+
+op fm_x()
+	syntax = "x" 
+	image  = "0010"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 0;
+		PSRXMODE = 1;
+		PSRCMODE = 0;
+		}
+
+op fm_c()
+	syntax = "c" 
+	image  = "0001"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 0;
+		PSRXMODE = 0;
+		PSRCMODE = 1;
+		}
+
+
+op fm_fs()
+	syntax = "fs" 
+	image  = "1100"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 1;
+		PSRXMODE = 0;
+		PSRCMODE = 0;
+		}
+
+op fm_fx()
+	syntax = "fx" 
+	image  = "1010"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 0;
+		PSRXMODE = 1;
+		PSRCMODE = 0;
+		}
+
+op fm_fc()
+	syntax = "f" 
+	image  = "1001"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 0;
+		PSRXMODE = 0;
+		PSRCMODE = 1;
+		}
+
+
+op fm_sx()
+	syntax = "sx" 
+	image  = "0110"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 1;
+		PSRXMODE = 1;
+		PSRCMODE = 0;
+		}
+
+op fm_sc()
+	syntax = "sc" 
+	image  = "0101"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 1;
+		PSRXMODE = 0;
+		PSRCMODE = 1;
+		}
+
+op fm_xc()
+	syntax = "xc" 
+	image  = "0011"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 0;
+		PSRXMODE = 1;
+		PSRCMODE = 1;
+		}
+
+op fm_fsx()
+	syntax = "fsx" 
+	image  = "1110"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 1;
+		PSRXMODE = 1;
+		PSRCMODE = 0;
+		}
+
+op fm_fxc()
+	syntax = "fxc" 
+	image  = "1011"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 0;
+		PSRXMODE = 1;
+		PSRCMODE = 1;
+		}
+
+op fm_sxc()
+	syntax = "sxc"
+	image = "0111"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 1;
+		PSRXMODE = 1;
+		PSRCMODE = 1;
+		}
+
+op fm_fsxc()
+	syntax = "fsxc"
+	image = "1111"
+	action = {
+		PSRFMODE = 1;
+		PSRSMODE = 1;
+		PSRXMODE = 1;
+		PSRCMODE = 1;
+		}
+
+op fm_nob()
+	syntax = ""
+	image = "0000"
+	action = {
+		PSRFMODE = 0;
+		PSRSMODE = 0;
+		PSRXMODE = 0;
+		PSRCMODE = 0;
+		}
+
+mode field_mask = fm_f | fm_s | fm_x | fm_c | fm_fs | fm_fx | fm_fc | fm_sx | fm_sc | fm_xc | fm_fsx | fm_fxc | fm_sxc | fm_fsxc | fm_nob
+
+
+op setR = setRon | setRoff
+
+op setRon()
+	syntax = "spsr"
+	image = "1"
+	action = {
+		RBIT = 1;
+	}
+
+op setRoff()
+	syntax = "cpsr"
+	image = "0"
+	action = {
+		RBIT = 0;
+	}
+
+op setB = setBon | setBoff
+
+op setSon()
+	syntax = "s"
+	image = "1"
+	action = {
+		SBIT = 1;
+	}
+
+op setSoff()
+	syntax = ""
+	image = "0"
+	action = {
+		SBIT = 0;
+	}
+
+
+// **** CPSR-move instructions ******
+
 op MSR_imm(cond: condition,  setr: setR, fm: field_mask, shifter_operand: rotatedImmediate)
 	syntax = format("msr%s %s_%s, %s", cond.syntax, setr.syntax,fm.syntax, shifter_operand.syntax)
 	image = format("%s00110%s10%s1111%s", cond.image, setr.image, fm.image, shifter_operand.image)
