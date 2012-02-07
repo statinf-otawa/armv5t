@@ -24,6 +24,7 @@ WITH_THUMB		= 1	# comment it to prevent use of THUMB mode
 #WITH_DYNLIB		= 1 # uncomment it to link in dynamic library
 
 # definitions
+ARCH=arm
 ifdef WITH_DYNLIB
 REC_FLAGS = WITH_DYNLIB=1
 endif
@@ -36,7 +37,9 @@ GFLAGS= \
 	-m sys_call:extern/sys_call \
 	-v \
 	-a disasm.c \
-	-S
+	-a used_regs.c \
+	-S \
+	-switch
 
 ifdef WITH_THUMB
 MAIN_NMP	=	arm-thumb.nmp
@@ -55,7 +58,8 @@ NMP = \
 	nmp/shiftedRegister.nmp \
 	nmp/simpleType.nmp \
 	nmp/stateReg.nmp \
-	nmp/tempVar.nmp
+	nmp/tempVar.nmp \
+	nmp/control.nmp
 
 
 # goals definition
@@ -81,17 +85,13 @@ endif
 # rules
 all: lib $(GOALS)
 
-arm.nml: $(NMP)
-	cd nmp &&  ../$(GLISS_PREFIX)/gep/gliss-nmp2nml.pl $(MAIN_NMP) ../$@  && cd ..
-
-arm.irg: arm.nml
-	$(GLISS_PREFIX)/irg/mkirg $< $@
-	$(GLISS_PREFIX)/irg/print_irg -i $@ > arm.out
+$(ARCH).irg: $(NMP)
+	cd nmp &&  ../$(GLISS_PREFIX)/irg/mkirg $(MAIN_NMP) ../$@  && cd ..
 
 src include: arm.irg
 	$(GLISS_PREFIX)/gep/gep $(GFLAGS) $<
 
-lib: src include/arm/config.h src/disasm.c
+lib: src include/arm/config.h src/disasm.c src/used_regs.c
 	(cd src; make $(REC_FLAGS))
 
 arm-disasm:
@@ -105,7 +105,10 @@ ifdef WITH_THUMB
 endif
 
 src/disasm.c: arm.irg
-	$(GLISS_PREFIX)/gep/gliss-disasm arm.nml -o $@ -c
+	$(GLISS_PREFIX)/gep/gliss-disasm $(ARCH).irg -o $@ -c
+
+src/used_regs.c: $(ARCH).irg nmp/used_regs.nmp
+	$(GLISS_PREFIX)/gep/gliss-used-regs $< -e nmp/used_regs.nmp
 
 arm-sim:
 	cd sim; make

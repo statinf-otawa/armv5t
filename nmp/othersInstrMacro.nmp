@@ -10,31 +10,6 @@ macro GetHalfWord(BASE_ADDR) = M16[BASE_ADDR]
 
 
 
-macro LDRB(rd) = \
-		TMP_EA = TMP_REG2;\
-		// !!WARNING!! rd == r15 ==> result unpredictable
-		Set_ARM_GPR(rd,M[TMP_EA]);\
-
-
-macro LDR(rd) = \
-		TMP_EA = TMP_REG2;\
-		TMP_SWORD = GetWord(TMP_EA);\
-		if (rd == 15) then\
-			NIA = TMP_SWORD & 0xFFFFFFFE; \
-			TFLAG = TMP_SWORD<0..0>; \
-		else \
-			Set_ARM_GPR(rd,TMP_SWORD);\
-		endif;\
-
-
-macro STRB() = \
-		TMP_EA = TMP_REG2;\
-		M[TMP_EA] = TMP_REG1;
-
-macro STR() = \
-		TMP_EA = TMP_REG2;\
-		TMP_SWORD = TMP_REG1;\
-		SetWord(TMP_EA,TMP_SWORD);
 
 ///////////////////////////////////////////
 // II.1.1 Miscellaneous Loads/Stores

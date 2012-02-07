@@ -22,6 +22,7 @@ mode setS(set: u1) = set
 	action = {
 		SBIT = set;
 	}
+	value = set
 
 
 macro update_shift_CFLAG(shift_op) = \
@@ -29,6 +30,17 @@ macro update_shift_CFLAG(shift_op) = \
 		CFLAG = shift_op.carry_out; \
 	endif \
 
+
+op ADD_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: shiftedRegister)
+	syntax = format("add%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	image = format("%s0000100%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
+	action = {
+		if (cond) then
+			sets.action;
+			update_shift_CFLAG(shifter_operand);
+			ADD(rd,rn,shifter_operand);
+		endif;
+	}
 
 op ADD_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: rotatedImmediate)
 	syntax = format("add%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
@@ -40,7 +52,6 @@ op ADD_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 			ADD(rd,rn,shifter_operand);
 		endif;
 	}
-
 
 op ADC_shr(cond : condition, sets : setS, rd : REG_INDEX, rn :REG_INDEX, shifter_operand	: shiftedRegister) 
 	syntax = format("adc%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
@@ -62,17 +73,6 @@ op ADC_imm(cond : condition, sets : setS, rd : REG_INDEX, rn :REG_INDEX, shifter
 			sets.action;
 			update_shift_CFLAG(shifter_operand);
 			ADC(rd,rn,shifter_operand);
-		endif;
-	}
-
-op ADD_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: shiftedRegister)
-	syntax = format("add%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
-	image = format("%s0000100%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
-	action = {
-		if (cond) then
-			sets.action;
-			update_shift_CFLAG(shifter_operand);
-			ADD(rd,rn,shifter_operand);
 		endif;
 	}
 
@@ -101,6 +101,17 @@ op AND_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 op BIC_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: shiftedRegister)
 	syntax = format("bic%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
 	image = format("%s0001110%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
+	action = {
+		if (cond) then
+			sets.action;
+			update_shift_CFLAG(shifter_operand);
+			BIC(rd,rn,shifter_operand);
+		endif;
+	}
+
+op BIC_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: rotatedImmediate)
+	syntax = format("bic%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
+	image = format("%s0011110%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
 			sets.action;
@@ -170,17 +181,6 @@ op EOR_shr(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifte
 		endif;
 	}
 
-op MOV_imm(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand : rotatedImmediate )
-	syntax = format("mov%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
-	image = format("%s0011101%s0000%s%s", cond.image, sets.image, rd.image, shifter_operand.image)
-	action = {
-		if (cond) then
-			sets.action;
-			update_shift_CFLAG(shifter_operand);
-			MOV(rd,shifter_operand);
-		endif;
-	}
-
 op MOV_shr(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: shiftedRegister)
 	syntax = format("mov%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
 	image = format("%s0001101%s0000%s%s", cond.image, sets.image, rd.image, shifter_operand.image)
@@ -192,9 +192,20 @@ op MOV_shr(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: shif
 		endif;
 	}
 
-op MVN_imm(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: rotatedImmediate)
+op MOV_imm(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand : rotatedImmediate )
+	syntax = format("mov%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
+	image = format("%s0011101%s0000%s%s", cond.image, sets.image, rd.image, shifter_operand.image)
+	action = {
+		if (cond) then
+			sets.action;
+			update_shift_CFLAG(shifter_operand);
+			MOV(rd,shifter_operand);
+		endif;
+	}
+
+op MVN_shr(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: shiftedRegister)
 	syntax = format("mvn%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
-	image = format("%s0011111%s0000%s%s", cond.image, sets.image, rd.image, shifter_operand.image)
+	image = format("%s0001111%s0000%s%s", cond.image, sets.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
 			sets.action;
@@ -203,9 +214,9 @@ op MVN_imm(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: rota
 		endif;
 	}
 
-op MVN_shr(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: shiftedRegister)
+op MVN_imm(cond : condition, sets : setS, rd : REG_INDEX, shifter_operand	: rotatedImmediate)
 	syntax = format("mvn%s%s %s, %s", cond.syntax, sets.syntax, rd.syntax, shifter_operand.syntax)
-	image = format("%s0001111%s0000%s%s", cond.image, sets.image, rd.image, shifter_operand.image)
+	image = format("%s0011111%s0000%s%s", cond.image, sets.image, rd.image, shifter_operand.image)
 	action = {
 		if (cond) then
 			sets.action;
@@ -356,14 +367,3 @@ op TST_shr(cond : condition, rn : REG_INDEX, shifter_operand: shiftedRegister)
 			TST(rn,shifter_operand);
 		endif;
 	}
-op BIC_imm(cond : condition, sets : setS, rd : REG_INDEX, rn : REG_INDEX, shifter_operand	: rotatedImmediate)
-	syntax = format("bic%s%s %s, %s, %s", cond.syntax, sets.syntax, rd.syntax, rn.syntax, shifter_operand.syntax)
-	image = format("%s0011110%s%s%s%s", cond.image, sets.image, rn.image, rd.image, shifter_operand.image)
-	action = {
-		if (cond) then
-			sets.action;
-			update_shift_CFLAG(shifter_operand);
-			BIC(rd,rn,shifter_operand);
-		endif;
-	}
-

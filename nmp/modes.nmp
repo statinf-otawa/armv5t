@@ -85,8 +85,16 @@ mode REG_LIST(r: u16) = r
 			syntax_reg_format(14, r),
 			syntax_reg_format(15, r)
 		) endif
-		
 
+
+mode IMM24(n: s24) = n
+	syntax = format("%d", n << 2)
+	image  = format("%24b", n)
+
+
+mode OFFSET_12(n: u12) = n
+	syntax = format("#%d", n)
+	image = format("%12b", n)
 
 
 

@@ -1,27 +1,57 @@
 
 
-macro Get_ARM_GPR(r) = \
-	if (r) <= 7 then \
-		GPR[r] \
-	else if (r) <= 12 then \
-		if MBITS == mode_FIQ then \
-			GPR[(r) + 8] \
-		else \
-			GPR[r] \
-		endif \
-	else if (r) <= 14 then \
-		switch (MBITS) { \
-			case mode_supervisor: GPR[(r) + 10] \
-			case mode_abort:      GPR[(r) + 12] \
-			case mode_FIQ:        GPR[(r) + 8] \
-			case mode_IRQ:        GPR[(r) + 16] \
-			case mode_undefined:  GPR[(r) + 14] \
-			default:              GPR[r] \
-		} \
-	else \
-		(__IADDR + 8) \
-	endif endif endif
-	
+//macro Get_ARM_GPR(r) = \
+//	if (r) <= 7 then \
+//		GPR[r] \
+//	else if (r) <= 12 then \
+//		if MBITS == mode_FIQ then \
+//			GPR[(r) + 8] \
+//		else \
+//			GPR[r] \
+//		endif \
+//	else if (r) <= 14 then \
+//		switch (MBITS) { \
+//			case mode_supervisor: GPR[(r) + 10] \
+//			case mode_abort:      GPR[(r) + 12] \
+//			case mode_FIQ:        GPR[(r) + 8] \
+//			case mode_IRQ:        GPR[(r) + 16] \
+//			case mode_undefined:  GPR[(r) + 14] \
+//			default:              GPR[r] \
+//		} \
+//	else \
+//		(__IADDR + 8) \
+//	endif endif endif
+
+let offset_fiq	= 16
+let offset_irq	= 23
+let offset_svc 	= 25
+let offset_abt	= 27
+let offset_und	= 29
+macro reg_id(m, i) = coerce(card(8), (((m) << 4) | (i)))
+
+macro reg_offset(i) = \
+	switch(reg_id(MBITS, i)) { \
+	case reg_id(mode_fiq, 8): offset_fiq - 8 \
+	case reg_id(mode_fiq, 9): offset_fiq - 8 \
+	case reg_id(mode_fiq, 10): offset_fiq - 8 \
+	case reg_id(mode_fiq, 11): offset_fiq - 8 \
+	case reg_id(mode_fiq, 12): offset_fiq - 8 \
+	case reg_id(mode_fiq, 13): offset_fiq - 8 \
+	case reg_id(mode_fiq, 14): offset_fiq - 8 \
+	case reg_id(mode_irq, 13): offset_irq - 13 \
+	case reg_id(mode_irq, 14): offset_irq - 13 \
+	case reg_id(mode_svc, 13): offset_svc - 13 \
+	case reg_id(mode_svc, 14): offset_svc - 13 \
+	case reg_id(mode_abt, 13): offset_abt - 13 \
+	case reg_id(mode_abt, 14): offset_abt - 13 \
+	case reg_id(mode_und, 13): offset_und - 13 \
+	case reg_id(mode_und, 14): offset_und - 13 \
+	default: 0 \
+	}
+
+
+macro Get_ARM_GPR(r) = GPR[r + reg_offset(r)]
+macro Set_ARM_GPR(r, v) = GPR[r + reg_offset(r)] = v
 
 
 ///////////////////////////////////////////
@@ -32,27 +62,27 @@ macro Get_ARM_GPR(r) = \
 /////////////////////////////////////////////////
 //Set a value (val2) in the selected register (r)
 /////////////////////////////////////////////////
-macro Set_ARM_GPR(r, val2) = \
-	if (r) <= 7 then \
-		GPR[r] = val2; \
-	else if (r) <= 12 then \
-		if MBITS == mode_FIQ then \
-			GPR[(r) + 8] = val2; \
-		else \
-			GPR[r] = val2; \
-		endif; \
-	else if (r) <= 14 then \
-		switch (MBITS) { \
-			case mode_supervisor: GPR[(r) + 10] = val2; \
-			case mode_abort:      GPR[(r) + 12] = val2; \
-			case mode_FIQ:        GPR[(r) + 8] = val2; \
-			case mode_IRQ:        GPR[(r) + 16] = val2; \
-			case mode_undefined:  GPR[(r) + 14] = val2; \
-			default:              GPR[r] = val2; \
-		}; \
-	else \
-		NIA = val2; \
-	endif; endif; endif;
+//macro Set_ARM_GPR(r, val2) = \
+//	if (r) <= 7 then \
+//		GPR[r] = val2; \
+//	else if (r) <= 12 then \
+//		if MBITS == mode_FIQ then \
+//			GPR[(r) + 8] = val2; \
+//		else \
+//			GPR[r] = val2; \
+//		endif; \
+//	else if (r) <= 14 then \
+//		switch (MBITS) { \
+//			case mode_supervisor: GPR[(r) + 10] = val2; \
+//			case mode_abort:      GPR[(r) + 12] = val2; \
+//			case mode_FIQ:        GPR[(r) + 8] = val2; \
+//			case mode_IRQ:        GPR[(r) + 16] = val2; \
+//			case mode_undefined:  GPR[(r) + 14] = val2; \
+//			default:              GPR[r] = val2; \
+//		}; \
+//	else \
+//		NIA = val2; \
+//	endif; endif; endif;
 
 
 

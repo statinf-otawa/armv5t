@@ -17,60 +17,65 @@ let hivector = 0
 //Mode of a ARM Processor
 let mode_user       = 0b10000
 let mode_FIQ        = 0b10001
+let mode_fiq        = 0b10001
 let mode_IRQ        = 0b10010
+let mode_irq        = 0b10010
 let mode_supervisor = 0b10011
+let mode_svc		= 0b10011
 let mode_abort      = 0b10111
+let mode_abt      	= 0b10111
 let mode_undefined  = 0b11011
+let mode_und  		= 0b11011
 let mode_system     = 0b11111
+let mode_sys     	= 0b11111
 
 
 // Register file
 reg GPR[GPRNum, u32]
 	fmt = "R%d"
 
+reg LR[1, u32]	alias = GPR[14]
+reg PC[1, u32] 	alias = GPR[15]
+reg NIA[1, u32]	alias = GPR[15] pc = 1
+reg R14_svc [1, u32] alias = GPR[24]
+
 
 // Current Program Status Register
 reg Ucpsr [1, u32]
+
+reg CPSR [1, u32] alias = Ucpsr
 reg Uspsr [SPSRNum, u32]
+reg SPSR_svc [1, u32] alias = Uspsr[0]
 
 
-//Register containing the current register output
-//reg ALU_OUT [1, u32]
+reg NFLAG [1, u1] alias  = Ucpsr<31..31>	// N=1 if the result is negative, N=0 if it is positive or zero
+reg ZFLAG [1, u1] alias  = Ucpsr<30..30>	//Z=1 if the result of the instruction is zero and to 0 otherwise
+reg CFLAG [1, u1] alias  = Ucpsr<29..29>
+	//(*)For an addition C is set to 1 if the addition produced a carry and to 0 otherwise
+	//(*)For a substraction C is set to 0 if the substraction produced a borrow and to 1 otherwise
+	//(*)For an operation that incorporate a shift operation C is set to the last u1 shifted out  of the value by the shifter
+	//(*)Else C is normally unchanged.
+reg VFLAG [1, u1] alias  = Ucpsr<28..28>
+	//(*) For an addition V is set to 1 if signed overflow occured
+	//(*) Else V is normally unchanged
+reg QFLAG [1, u1] alias  = Ucpsr<27..27>	//Indicate if an overflow and/or saturation has occured in the DSP instruction
 
+reg EBIT [1, u1]  alias  = CPSR<9..9>		// ARM v6, load/store endianness (1 big, 0 little)
+reg ABIT [1, u1]  alias  = CPSR<8..8>		// ARM v6, 
+reg IFLAG [1, u1] alias  = Ucpsr<7..7>		//Disable IRQ interrupts when it is set
+reg FFLAG [1, u1] alias  = Ucpsr<6..6>		//Disable FIQ interrupts whenit is set
+reg TFLAG [1, u1] alias	 = Ucpsr<5..5>		//If T=0 Indicates ARM execution else if T=1 indicates Thumb execution
+reg TBIT [1, u1]  alias	 = Ucpsr<5..5>
+reg MBITS [1, u5] alias  = Ucpsr<4..0>		//Determine the mode in which the processor operates
 
-// The link register used in subroutine calls is register 14.
-// Alias NOT used for alias analysis complexity
-// reg LINK[u32] alias = GPR[14]
 
 // Memory
 mem M 	[32, u8]  				// 8-bits word memory
 mem M16 [32, u16] alias = M[0]	// 16-bits word memory alias
 mem M32 [32, u32] alias = M[0]	// 32-bits word memory alias
-//mem UKM[32, u8]  // memory is u8 addressable
-
-//reg UKCOND [1, u8]
-//reg UKEA   [1, u8]  
-//reg UKDONE [1, u8]
-//reg TTARGET [1, u32]
-//reg UKGPR  [32, u8]
-//reg UKVALUE [256, u8]
-//reg LENGTH     [1, s32]
-//reg ADDRESS    [256, u32]
-//reg VALUE      [256, s8]
-//reg LENGTH_GPR [1, s32]
-//reg ADDRESS_GPR[128, u32]
-//reg REGNUMBER_GPR[128, s32]
-//reg BYTENUMBER_GPR[128, s32]
-//reg LENGTH_FPR [1, s32]
-//reg ADDRESS_FPR[256, u32]
-//reg REGNUMBER_FPR[256, s32]
-//reg BYTENUMBER_FPR[256, s32]
-//reg CONVLENGTH[1, s32]
-//reg CONVREGNUMBER[32, s32]
-//reg CONVTYPE[32, s32]
 
 
-
+// temporaries
 var Temp[1,u32]
 reg SBIT[1,u1]
 reg MSBIT[1,u1]
@@ -93,50 +98,7 @@ reg PSRCMODE[1,u1]
 reg RBIT[1,u1]
 
 
-///////////////////////////////////////////
-// Program status registers
-///////////////////////////////////////////
-
-//N=1 if the result is negative, N=0 if it is positive or zero
-reg NFLAG [1, u1] alias  = Ucpsr<31..31>
-
-//Z=1 if the result of the instruction is zero and to 0 otherwise
-reg ZFLAG [1, u1] alias  = Ucpsr<30..30>
-
-//(*)For an addition C is set to 1 if the addition produced a carry and to 0 otherwise
-//(*)For a substraction C is set to 0 if the substraction produced a borrow and to 1 otherwise
-//(*)For an operation that incorporate a shift operation C is set to the last u1 shifted out 
-//   of the value by the shifter
-//(*)Else C is normally unchanged.
-reg CFLAG [1, u1] alias  = Ucpsr<29..29>
-
-//(*) For an addition V is set to 1 if signed overflow occured
-//(*) Else V is normally unchanged
-reg VFLAG [1, u1] alias  = Ucpsr<28..28>
-
-//Indicate if an overflow and/or saturation has occured in the DSP instruction
-reg QFLAG [1, u1] alias  = Ucpsr<27..27>
-
-//Disable IRQ interrupts when it is set
-reg IFLAG [1, u1] alias  = Ucpsr<7..7>
-
-//Disable FIQ interrupts whenit is set
-reg FFLAG [1, u1] alias  = Ucpsr<6..6>
-
-//If T=0 Indicates ARM execution else if T=1 indicates Thumb execution
-reg  TFLAG [1, u1] alias = Ucpsr<5..5>
-reg TBIT [1, u1] alias = Ucpsr<5..5>
-
-//Determine the mode in which the processor operates
-reg MBITS [1, u5] alias  = Ucpsr<4..0>
-
-// Program Counters
-reg NIA[1, s32]    alias = GPR[15] pc = 1
-
-
-///////////////////////////////////////////
-// Intial Values of some registers
-///////////////////////////////////////////
+// initialisation
 op init ()
 	action = { 
 		NIA = 0x2000;
