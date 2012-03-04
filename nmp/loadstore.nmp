@@ -316,7 +316,7 @@ op STR_shr(cond: condition, setpre: u1, setu: u1, setb: u1, setw: u1, rn: REG_IN
 
 op STRH_imm(cond: condition, setpre: u1,setu:u1,setw:u1,rn : REG_INDEX, rd :	 REG_INDEX , immh: u4, imml:u4)
 
-	syntax = format("str%sh %s, [%s%s,%s#%d%s%s",
+	syntax = format("str%sh %s, [%s%s,%s#%lu%s%s",
 		cond.syntax, 
 		rd.syntax,
 		rn.syntax,
@@ -389,7 +389,7 @@ op STRH_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_
 
 
 op LDRH_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_INDEX , immh: u4, imml:u4)
-	syntax = format("ldr%sh %s, [%s%s,%s#%d%s%s",
+	syntax = format("ldr%sh %s, [%s%s,%s#%lu%s%s",
 		cond.syntax, 
 		rd.syntax,
 		rn.syntax,
@@ -466,7 +466,7 @@ op LDRH_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_
 
 op LDRSB_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd : REG_INDEX , immh: u4, imml:u4)
 
-	syntax = format("ldr%ssb %s, [%s%s,%s#%d%s%s",
+	syntax = format("ldr%ssb %s, [%s%s,%s#%lu%s%s",
 		cond.syntax, 
 		rd.syntax,
 		rn.syntax,
@@ -539,7 +539,7 @@ op LDRSB_shr(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd :REG_
 
 op LDRSH_imm(cond: condition, setpre:u1,setu:u1,setw:u1,rn : REG_INDEX, rd :REG_INDEX , immh: u4, imml:u4)
 
-	syntax = format("ldr%ssh %s, [%s%s,%s#%d%s%s",
+	syntax = format("ldr%ssh %s, [%s%s,%s#%lu%s%s",
 	cond.syntax, 
 		rd.syntax,
 		rn.syntax,
