@@ -98,8 +98,6 @@ macro imm_shift_carry(kind, imm, rm) = \
 		endif \
 		 \
 	} \
-	
-
 
 mode shiftedRegister = immShift | regShift
 
@@ -138,7 +136,6 @@ mode regShift(shiftAmt: REG_INDEX, shiftKind: u2, r: REG_INDEX) =
 			case ROR: "ror"
 		},
 		shiftAmt.syntax)
-
 	image  = format("%s 0 %2b 1 %s", shiftAmt.image, shiftKind, r.image)
 	carry_out = reg_shift_carry(shiftKind, Get_ARM_GPR(shiftAmt), Get_ARM_GPR(r))
 		
@@ -146,17 +143,17 @@ mode regShift(shiftAmt: REG_INDEX, shiftKind: u2, r: REG_INDEX) =
 // WARNING! if r15 is specified as r, the value used is the current instruction"s address + 8	
 mode immShift(shiftAmt: u5, shiftKind: u2, r: REG_INDEX) =
 	imm_shift_result(shiftKind, shiftAmt, Get_ARM_GPR(r))
-	syntax = format("%s, %s #%d", r.syntax,
-		switch (shiftKind) {
-		case LSL: "lsl"
-		case LSR: "lsr"
-		case ASR: "asr"
-		case ROR: 
-			if (shiftAmt != 0) then
-				"ror"
-			else   
-				"rrx"
-			endif
-		}, shiftAmt)
+	syntax =
+		if shiftKind != ROR && shiftAmt == 0 then
+			r.syntax
+		else
+			format("%s, %s #%d", r.syntax,
+				switch (shiftKind) {
+				case LSL: "lsl"
+				case LSR: "lsr"
+				case ASR: "asr"
+				case ROR:  if (shiftAmt != 0) then "ror" else    "rrx" endif
+			}, shiftAmt)
+		endif
 	image  = format("%5b %2b 0 %s", shiftAmt, shiftKind, r.image)
 	carry_out = imm_shift_carry(shiftKind, shiftAmt, Get_ARM_GPR(r))

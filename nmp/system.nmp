@@ -233,9 +233,19 @@ op setSoff()
 
 // **** CPSR-move instructions ******
 
+//op DBG(cond: condition, option: card(4))
+//	syntax = format("dbg%s #%d", cond, option)
+//	image = format("%s 00110 0 10 0000 1111 0000 1111 %4b", cond, option)
+//	action = {
+//		// Hint_Debug(option)
+//	}
+
+
+
+// MSR & DBG (ARM v6)
 op MSR_imm(cond: condition,  setr: setR, fm: field_mask, shifter_operand: rotatedImmediate)
 	syntax = format("msr%s %s_%s, %s", cond.syntax, setr.syntax,fm.syntax, shifter_operand.syntax)
-	image = format("%s00110%s10%s1111%s", cond.image, setr.image, fm.image, shifter_operand.image)
+	image = format("%s 00110 %s 10 %s 1111 %s", cond.image, setr.image, fm.image, shifter_operand.image)
 	action = {
 		if (cond) then
 			setr.action;	
@@ -322,7 +332,7 @@ op MSR_shr(cond: condition,  setr: setR, fm : field_mask, rn: REG_INDEX)
 op MRS(cond : condition,  setr : setR, rn : REG_INDEX)
 	syntax = format("mrs%s %s, %s", cond.syntax, rn.syntax ,setr.syntax)
 	image = format("%s00010%s001111%s000000000000", cond.image, setr.image, rn.image)
-   action = {
+	action = {
 		if (cond) then
 			setr.action;
 			if (RBIT == 0) then
@@ -332,4 +342,13 @@ op MRS(cond : condition,  setr : setR, rn : REG_INDEX)
 				Set_ARM_GPR(rn,TMP_REG3);
 			endif;
 		endif;
+	}
+
+
+// ARMv6
+op CDP(cond: condition, opc1: card(4), CRn: card(4), CRd: card(4), coproc: card(4), opc2: card(3), CRm: card(4))
+	syntax = format("cdp%s %d, %d, %d, %d, %d, %d", cond, coproc, opc1, CRd,  CRn, CRm, opc2)
+	image = format("%s 1110 %4b %4b %4b %4b %3b 0 %4b", cond, opc1, CRn, CRd, coproc, opc2, CRm)
+	action = {
+		// unsupported action
 	}

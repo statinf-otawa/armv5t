@@ -61,7 +61,7 @@ macro syntax_reg(on_off, num_reg) = \
 	endif \
 
 macro syntax_reg_format(idx, v16) = \
-	format("%s%s", if v16<idx..idx> == 0 then "" else ", " endif, syntax_reg(v16<idx..idx>, idx)) \
+	format("%s%s", if v16<idx..idx> && (v16 & ((1 << idx) - 1)) then ", " else "" endif, syntax_reg(v16<idx..idx>, idx)) \
 
 mode REG_LIST(r: u16) = r
 	image  = format( "%16b", r)

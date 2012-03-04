@@ -398,4 +398,40 @@ op CLZ(cond: condition, rd: REG_INDEX, rm: REG_INDEX)
 		endif;
 	}
 
+// ARMv6
+//op BFC(cond: condition, rd: REG_INDEX, msb: card(5), lsb: card(5))
+//	syntax = 
+//	image = format("%s 0111 110 %5b %s %5b 001 1111", cond, msb, rd, lsb)
+//	action = {
+//		if cond then
+//			if rd.number == 15 then error("UNPREDICTABLE"); endif;
+//			if msb >= lsb then
+//				rd<msb..lsb> = 0;
+//			else
+//				error("UNPREDICTABLE");
+//			endif;
+//		endif;
+//	}
+
+op BFIC(cond: condition, rd: REG_INDEX, rn: REG_INDEX, msb: card(5), lsb: card(5))
+	syntax =
+		if rn.number == 15
+		then format("bfc%s %s, #%d, #%d", cond, rd, lsb, msb - lsb + 1)
+		else format("bfi%s %s, #%d, #%d", cond, rd, lsb, msb - lsb + 1)
+		endif
+	image = format("%s 0111 110 %5b %s %5b 001 %s", cond, msb, rd, lsb, rn)
+	action = {
+		if cond then
+			if msb >= lsb then
+				if rn.number == 15 then
+					rd<msb..lsb> = 0;
+				else
+					rd<msb..lsb> = rn;
+				endif;
+			else
+				error("UNPREDICTABLE");
+			endif;
+		endif;
+	}
+
 

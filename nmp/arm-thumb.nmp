@@ -53,9 +53,7 @@ op dataProcessing = ADD_imm | ADC_shr | ADC_imm | ADD_shr | AND_shr | AND_imm | 
 				| MVN_shr | MVN_imm | ORR_shr | ORR_imm | RSB_shr | RSB_imm | RSC_shr | RSC_imm 
 				| SBC_shr | SBC_imm | SUB_shr | SUB_imm | TEQ_shr | TEQ_imm | TST_shr | TST_imm 
 
-op branch = 
-	  BX_ARM
-	| B_Cond	
+op branch =  BX_ARM | B_Cond
 
 
 op LoadStore = LDR_imm | STR_imm | LDR_shr | STR_shr | STRH_imm 
@@ -69,7 +67,7 @@ op multiply = MLA | MUL | SMULL | UMULL | SMLAL | UMLAL
 
 op semaphore = SWP
 
-op misc = CLZ
+op misc = CLZ | BFIC | CDP
 
 op sra = MSR_imm | MSR_shr | MRS 
 
