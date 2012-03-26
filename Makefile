@@ -21,7 +21,8 @@ WITH_EABI		= 1	# comment it to enable EABI support (no system call)
 WITH_DISASM		= 1	# comment it to prevent disassembler building
 WITH_SIM		= 1	# comment it to prevent simulator building
 WITH_THUMB		= 1	# comment it to prevent use of THUMB mode
-#WITH_DYNLIB		= 1 # uncomment it to link in dynamic library
+WITH_DYNLIB		= 1 # uncomment it to link in dynamic library
+WITH_IO			= 1	# uncomment it to use IO memory (slower but allowing callback)
 
 # definitions
 ARCH=arm
@@ -33,13 +34,18 @@ GFLAGS= \
 	-m loader:old_elf \
 	-m code:code \
 	-m env:void_env \
-	-m mem:vfast_mem \
 	-m sys_call:extern/sys_call \
 	-v \
 	-a disasm.c \
 	-a used_regs.c \
 	-S \
 	-switch
+
+ifdef WITH_IO
+GFLAGS += -m mem:io_mem
+else
+GFLAGS += -m mem:vfast_mem
+endif
 
 ifdef WITH_THUMB
 MAIN_NMP	=	arm-thumb.nmp

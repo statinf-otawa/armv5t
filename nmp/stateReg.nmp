@@ -1,4 +1,7 @@
 
+// activate only marked registers for debugging
+let gliss_debug_only = 1
+
 // constants
 let LSL = 0
 let LSR = 1
@@ -32,6 +35,11 @@ let mode_sys     	= 0b11111
 
 // Register file
 reg GPR[GPRNum, u32]
+
+reg R[16, u32]
+	alias = GPR[0]
+	debug = 1
+	label = "Registers"
 	fmt = "R%d"
 
 reg LR[1, u32]	alias = GPR[14]
@@ -42,6 +50,9 @@ reg R14_svc [1, u32] alias = GPR[24]
 
 // Current Program Status Register
 reg Ucpsr [1, u32]
+	debug = 1
+	label = "CPSR"
+	fmt = "CPSR"
 
 reg CPSR [1, u32] alias = Ucpsr
 reg Uspsr [SPSRNum, u32]
