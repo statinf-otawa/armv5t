@@ -32,9 +32,10 @@ op ARM(x : ARM_instr)
 	image = x.image
 	syntax = x.syntax
 	action = {
-		NIA = NIA + 8;
+		NPC = PC + 4;
+		PC = PC + 8;
 		x.action;
-		NIA = NIA - 4;
+		PC = NPC;
 	}
 	instruction_set_select = TFLAG == 0
 	instruction_set_name = "ARM"

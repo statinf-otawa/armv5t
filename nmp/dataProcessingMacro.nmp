@@ -51,7 +51,7 @@ macro reg_offset(i) = \
 
 
 macro Get_ARM_GPR(r) = GPR[r + reg_offset(r)]
-macro Set_ARM_GPR(r, v) = GPR[r + reg_offset(r)] = v
+macro Set_ARM_GPR(r, v) = if r == 15 then NPC = v; else GPR[r + reg_offset(r)] = v; endif
 
 
 ///////////////////////////////////////////

@@ -36,7 +36,7 @@ macro LDM1_NIA() = \
 		if (TMP_SWORD == 0) then \
 			GPR[0] = (2 << 16) + 38;\
 		else\
-			NIA = TMP_SWORD & 0xFFFFFFFE;\
+			NPC = TMP_SWORD & 0xFFFFFFFE;\
 		endif;\
 		TFLAG = TMP_SWORD & 1;\
 		TBIT = TFLAG;\
@@ -51,9 +51,9 @@ macro LDM3_NIA() = \
 			GPR[0] = (2 << 16) + 38;\
 		endif;\
 		if (TFLAG == 1) then\
-			NIA = TMP_SWORD & 0xFFFFFFFE;\
+			NPC = TMP_SWORD & 0xFFFFFFFE;\
 		else\
-			NIA = TMP_SWORD & 0xFFFFFFFC;\
+			NPC = TMP_SWORD & 0xFFFFFFFC;\
 		endif;\
 		TMP_START_ADDR = TMP_START_ADDR+4;
 

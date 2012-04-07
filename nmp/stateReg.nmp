@@ -37,8 +37,8 @@ let mode_sys     	= 0b11111
 reg GPR[GPRNum, u32]
 
 reg LR[1, u32]	alias = GPR[14]
-reg PC[1, u32] 	alias = GPR[15]
-reg NIA[1, u32]	alias = GPR[15] pc = 1
+reg PC[1, u32] 	alias = GPR[15] pc = 1
+reg NPC[1, u32]
 reg R14_svc [1, u32] alias = GPR[24]
 
 
@@ -122,22 +122,17 @@ reg R[16, u32]
 // initialisation
 op init ()
 	action = { 
-		NIA = 0x2000;
-		//CIA = 0x2000;
-		//PIA = 0x2000;
-
-		//LR
+		PC = 0x2000;
 		GPR[14]=0x2000;
-		TFLAG = 0;
-		//SP
 		GPR[13]=0x800; 
 		GPR[21]=0x600; 
 		GPR[23]=0x400; 
 		GPR[25]=0x200;    
 		GPR[27]=0x1000; 
 		GPR[29]=0x1200; 
-		//CPSR in SuperVisor mode   
-		Ucpsr = 0x13;
+
+		Ucpsr = 0x13;	//CPSR in SuperVisor mode   
+		TFLAG = 0;
 		
 		// sp init for validator
 		// same vales as gdb

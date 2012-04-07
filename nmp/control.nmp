@@ -28,8 +28,7 @@ op B_Cond(cond: condition, setl: u1, signed_immed_24: IMM24)
 				Set_ARM_GPR(14, __IADDR + 4);
 			endif;
 			TMP_SWORD = coerce(int(30), signed_immed_24) :: 0b00;
-			TMP_REG2 = __IADDR + 8 + TMP_SWORD + 4;
-			NIA = TMP_REG2;
+			NPC = PC + TMP_SWORD;
 		endif;
 	}
 
@@ -41,7 +40,7 @@ op BX_ARM(cond : condition, rd : REG_INDEX)
 			TMP_REG1 = Get_ARM_GPR(rd); 
 			TBIT = TMP_REG1<0..0>;
 			TFLAG = TBIT;
-			NIA  = (TMP_REG1 & 0xFFFFFFFE) + 4;
+			NPC  = (TMP_REG1 & 0xFFFFFFFE);
 		endif;
 	}
 
@@ -56,7 +55,7 @@ op SWI(cond : condition, Immed_24: IMM24)
 			TFLAG = 0;
 			IFLAG = 1;
 			// EBIT = CP15_reg1_EEbit,	ARM v6
-			PC = 0x00000008 + 4;
+			NPC = 0x00000008;
 		endif;
 	}
 

@@ -30,7 +30,7 @@ macro LDR(rd) = \
 		TMP_EA = TMP_REG2;\
 		TMP_SWORD = GetWord(TMP_EA);\
 		if (rd == 15) then\
-			NIA = TMP_SWORD & 0xFFFFFFFE; \
+			NPC = TMP_SWORD & 0xFFFFFFFE; \
 			TFLAG = TMP_SWORD<0..0>; \
 		else \
 			Set_ARM_GPR(rd,TMP_SWORD);\
