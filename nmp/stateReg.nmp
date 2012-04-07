@@ -36,12 +36,6 @@ let mode_sys     	= 0b11111
 // Register file
 reg GPR[GPRNum, u32]
 
-reg R[16, u32]
-	alias = GPR[0]
-	debug = 1
-	label = "Registers"
-	fmt = "R%d"
-
 reg LR[1, u32]	alias = GPR[14]
 reg PC[1, u32] 	alias = GPR[15]
 reg NIA[1, u32]	alias = GPR[15] pc = 1
@@ -112,6 +106,17 @@ reg PSRXMODE[1,u1]
 reg PSRCMODE[1,u1]
 
 reg RBIT[1,u1]
+
+
+// R for debugging
+
+reg R[16, u32]
+	alias = GPR[0]
+	debug = 1
+	label = "Registers"
+	fmt = "R%d"
+	get = { "GLISS_GET_I"(Get_ARM_GPR("GLISS_IDX"));  }
+	set = { Set_ARM_GPR("GLISS_IDX", "GLISS_I");  }
 
 
 // initialisation

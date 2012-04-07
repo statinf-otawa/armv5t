@@ -19,6 +19,7 @@
 let proc = "arm"
 
 include "simpleType.nmp"
+include "dataProcessingMacro.nmp"
 include "stateReg.nmp"
 include "tempVar.nmp"
 include "modes.nmp"
@@ -31,8 +32,9 @@ op ARM(x : ARM_instr)
 	image = x.image
 	syntax = x.syntax
 	action = {
-		NIA = NIA + 4;
+		NIA = NIA + 8;
 		x.action;
+		NIA = NIA - 4;
 	}
 	instruction_set_select = TFLAG == 0
 	instruction_set_name = "ARM"
@@ -75,7 +77,6 @@ op sra = MSR_imm | MSR_shr | MRS
 // ****** includes ******
 
 include "condition.nmp"
-include "dataProcessingMacro.nmp"
 include "shiftedRegister.nmp"
 include "dataProcessing.nmp"
 include "control.nmp"

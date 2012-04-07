@@ -124,8 +124,9 @@ op THUMB(x : THUMB_instr)
 	action = {
                 //PIA = CIA;
                 //CIA = NIA;
-                NIA = NIA + 2;
+		NIA = NIA + 4;
 		x.action;
+		NIA = NIA - 2;
 	}
 	instruction_set_select = TFLAG == 1
 	instruction_set_name = "THUMB"
