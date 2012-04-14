@@ -92,13 +92,24 @@ macro Set_ARM_GPR(r, v) = if r == 15 then NPC = v; else GPR[r + reg_offset(r)] =
 /////////////////////////////////////////////////
 macro GetSPSR() = \
 	switch (MBITS) { \
-		case mode_supervisor: Uspsr[0] \
-		case mode_abort:      Uspsr[1] \
-		case mode_undefined:  Uspsr[2] \
-		case mode_IRQ:        Uspsr[3] \
-		case mode_FIQ:        Uspsr[4] \
-		default:              0 \
-	} \
+		case mode_user: 		Uspsr[0] \
+		case mode_supervisor: 	Uspsr[0] \
+		case mode_abort:      	Uspsr[1] \
+		case mode_undefined:  	Uspsr[2] \
+		case mode_IRQ:        	Uspsr[3] \
+		case mode_FIQ:        	Uspsr[4] \
+		default:              	0 \
+	}
+
+macro SetSPSR(x) = \
+	switch (MBITS) { \
+		case mode_user: 		Uspsr[0] = x; \
+		case mode_supervisor: 	Uspsr[0] = x; \
+		case mode_abort:      	Uspsr[1] = x; \
+		case mode_undefined:  	Uspsr[2] = x; \
+		case mode_IRQ:        	Uspsr[3] = x; \
+		case mode_FIQ:        	Uspsr[4] = x; \
+	}
 
 macro GetDis(r) = \
 	if (r) <= 7 then \

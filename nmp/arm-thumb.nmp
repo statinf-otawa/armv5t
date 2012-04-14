@@ -87,4 +87,5 @@ include "system.nmp"
 include "loadStoreM_Macro.nmp"
 include "loadStoreM.nmp"
 include "thumb.nmp"
+include "exception.nmp"
 

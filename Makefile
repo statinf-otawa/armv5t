@@ -58,6 +58,7 @@ NMP = \
 	nmp/control.nmp \
 	nmp/dataProcessingMacro.nmp \
 	nmp/dataProcessing.nmp \
+	nmp/exception.nmp \
 	nmp/loadstore.nmp \
 	nmp/loadStoreM.nmp \
 	nmp/loadStoreM_Macro.nmp \
