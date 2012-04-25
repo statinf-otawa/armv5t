@@ -17,10 +17,13 @@
 
 op exceptions = IRQ | FIQ
 
+var exn_tmp[1, u32]
+
 op IRQ()
 	action = {
-		SetSPSR(Ucpsr);
+		exn_tmp = CPSR;
 		MBITS = mode_irq;
+		SetSPSR(exn_tmp);
 		IFLAG = 1;
 		Set_ARM_GPR(14, PC + 4);
 		PC = 0x18;
@@ -29,8 +32,9 @@ op IRQ()
 
 op FIQ()
 	action = {
-		SetSPSR(Ucpsr);
+		exn_tmp = CPSR;
 		MBITS = mode_fiq;
+		SetSPSR(exn_tmp);
 		IFLAG = 1;
 		Set_ARM_GPR(14, PC + 4);
 		PC = 0x1C;
