@@ -21,26 +21,26 @@
 
 // ****** used modes ******
 
-macro SetSPSR(reg) = \
-	if (MBITS == mode_supervisor) then\
-		    Uspsr[0]=reg; \
-	else\
-		if (MBITS == mode_abort) then\
-			    Uspsr[1]=reg; \
-		else\
-			if (MBITS == mode_undefined) then\
-				    Uspsr[2]=reg; \
-			else\
-				if (MBITS == mode_IRQ) then\
-					    Uspsr[3]=reg; \
-				else\
-					if (MBITS == mode_FIQ) then\
-						    Uspsr[4]=reg; \
-					endif;\
-				endif;\
-			endif;\
-		endif;\
-	endif
+//macro SetSPSR(reg) = \
+//	if (MBITS == mode_supervisor) then\
+//		    Uspsr[0]=reg; \
+//	else\
+//		if (MBITS == mode_abort) then\
+//			    Uspsr[1]=reg; \
+//		else\
+//			if (MBITS == mode_undefined) then\
+//				    Uspsr[2]=reg; \
+//			else\
+//				if (MBITS == mode_IRQ) then\
+//					    Uspsr[3]=reg; \
+//				else\
+//					if (MBITS == mode_FIQ) then\
+//						    Uspsr[4]=reg; \
+//					endif;\
+//				endif;\
+//			endif;\
+//		endif;\
+//	endif
 
 
 mode fm_f()

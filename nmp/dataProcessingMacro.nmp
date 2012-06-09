@@ -22,37 +22,6 @@
 //		(__IADDR + 8) \
 //	endif endif endif
 
-let offset_fiq	= 16
-let offset_irq	= 23
-let offset_svc 	= 25
-let offset_abt	= 27
-let offset_und	= 29
-macro reg_id(m, i) = coerce(card(8), (((m) << 4) | (i)))
-
-macro reg_offset(i) = \
-	switch(reg_id(MBITS, i)) { \
-	case reg_id(mode_fiq, 8): offset_fiq - 8 \
-	case reg_id(mode_fiq, 9): offset_fiq - 8 \
-	case reg_id(mode_fiq, 10): offset_fiq - 8 \
-	case reg_id(mode_fiq, 11): offset_fiq - 8 \
-	case reg_id(mode_fiq, 12): offset_fiq - 8 \
-	case reg_id(mode_fiq, 13): offset_fiq - 8 \
-	case reg_id(mode_fiq, 14): offset_fiq - 8 \
-	case reg_id(mode_irq, 13): offset_irq - 13 \
-	case reg_id(mode_irq, 14): offset_irq - 13 \
-	case reg_id(mode_svc, 13): offset_svc - 13 \
-	case reg_id(mode_svc, 14): offset_svc - 13 \
-	case reg_id(mode_abt, 13): offset_abt - 13 \
-	case reg_id(mode_abt, 14): offset_abt - 13 \
-	case reg_id(mode_und, 13): offset_und - 13 \
-	case reg_id(mode_und, 14): offset_und - 13 \
-	default: 0 \
-	}
-
-
-macro Get_ARM_GPR(r) = GPR[r + reg_offset(r)]
-macro Set_ARM_GPR(r, v) = if r == 15 then NPC = v; else GPR[r + reg_offset(r)] = v; endif
-
 
 ///////////////////////////////////////////
 // Macro to set a value to the right requested 
@@ -90,15 +59,6 @@ macro Set_ARM_GPR(r, v) = if r == 15 then NPC = v; else GPR[r + reg_offset(r)] =
 /////////////////////////////////////////////////
 //Return the correct spsr (depending on the mode)
 /////////////////////////////////////////////////
-macro GetSPSR() = \
-	switch (MBITS) { \
-		case mode_supervisor: Uspsr[0] \
-		case mode_abort:      Uspsr[1] \
-		case mode_undefined:  Uspsr[2] \
-		case mode_IRQ:        Uspsr[3] \
-		case mode_FIQ:        Uspsr[4] \
-		default:              0 \
-	} \
 
 macro GetDis(r) = \
 	if (r) <= 7 then \
