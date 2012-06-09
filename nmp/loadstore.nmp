@@ -216,7 +216,7 @@ op STR_imm(cond: condition, setpre: u1, setu: u1, setb: u1, setw: u1, rn: REG_IN
 
 op LDR_shr(cond: condition, setpre: u1, setu: u1, setb: u1, setw: u1, rn: REG_INDEX, rd: REG_INDEX, shifter_operand: loadstoreSpecifiedShift)
 			 
-	syntax = format("ldrr%s%s%s %s, [%s%s, %s%s%s%s",
+	syntax = format("ldr%s%s%s %s, [%s%s, %s%s%s%s",
 		cond.syntax,
 		if setb then "b" else "" endif,
 		if setw then if (setpre == 0) then "t" else	"" endif else  "" endif,
