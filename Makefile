@@ -68,6 +68,9 @@ NMP = \
 	nmp/stateReg.nmp \
 	nmp/system.nmp \
 	nmp/tempVar.nmp
+ifdef WITH_THUMB
+NMP += nmp/thumb.nmp
+endif
 
 
 # goals definition
@@ -110,6 +113,7 @@ include/arm/config.h: config.tpl
 	cp config.tpl $@
 ifdef WITH_THUMB
 	echo "#define ARM_THUMB" >> $@
+	echo "#define ARM_THUMB_1" >> $@
 endif
 
 src/disasm.c: arm.irg

@@ -118,7 +118,16 @@ macro Get_THUMB_GPR(r) = GPR[r]
 // All thumb Instructions 
 ///////////////////////////////////////////
 
-op THUMB(x : THUMB_instr)
+op THUMB(i: thumb2)
+	image = i.image
+	syntax = i.syntax
+	action = { i.action; }
+	instruction_set_select = TFLAG == 1
+	instruction_set_name = "THUMB"
+
+op thumb2 =  thumb16 /*| thumb32*/
+
+op thumb16(x: thumb16_list)
 	image = x.image
 	syntax = x.syntax
 	action = {
@@ -127,10 +136,8 @@ op THUMB(x : THUMB_instr)
 		x.action;
 		PC = NPC;
 	}
-	instruction_set_select = TFLAG == 1
-	instruction_set_name = "THUMB"
 
-op THUMB_instr = ADD_thumb | AND_thumb | ASR_thumb | B_thumb | BIC_thumb 
+op thumb16_list = ADD_thumb | AND_thumb | ASR_thumb | B_thumb | BIC_thumb 
 | BLX_thumb | BX_thumb | COMPARE_thumb | EOR_thumb | LDMIA_thumb 
 | LDR_thumb | LDRB_thumb | LDRH_thumb | LDRS_thumb | LSL_thumb 
 | LSR_thumb | MUL_thumb | MVN_thumb | NEG_thumb 
@@ -138,7 +145,7 @@ op THUMB_instr = ADD_thumb | AND_thumb | ASR_thumb | B_thumb | BIC_thumb
 | STMIA_thumb | STR_thumb | STRB_thumb | STRH_thumb | SUB_thumb
 | TST_thumb  |  MOV_thumb  
 //MOV_thumb use ADD Rd, 0, Rm
-//| SWI_thumb  remplacé par B1_thumb cond = 1111
+//| SWI_thumb  remplacï¿½ par B1_thumb cond = 1111
 ///////////////////////////////////////////
 // I Arithmetic Instructions 
 ///////////////////////////////////////////
@@ -349,26 +356,27 @@ op B_thumb = B1_thumb
 // B1_thumb aussi est en conflit avec SWI , je traite ici
 //l'interruption ie: op SWI
 op B1_thumb(cond : u4,  simm: SIMM8)
-           syntax_cond =
-                     switch (cond)  {
-                      case 0: "BEQ"
-                      case 1: "BNE"
-                      case 2: "BCS"
-                      case 3: "BCC"
-		      case 4: "BMI"
-		      case 5: "BPL"
-		      case 6: "BVS"
-		      case 7: "BVC"
-		       case 8: "BHI"
-                      case 9: "BLS"
-                      case 10: "BGE"
-                      case 11: "BLT"
-		      case 12: "BGT"
-		      case 13: "BLE"
-		      case 14: "B"
-		      case 15: "SWI"
-                      }  
-	syntax = format("%s %s", syntax_cond, simm.syntax) 
+	target = __IADDR + 4 + (coerce(s32, simm) << 1)
+	syntax_cond =
+		switch (cond)  {
+		case 0: "beq"
+		case 1: "bne"
+		case 2: "bcs"
+		case 3: "bcc"
+		case 4: "bmi"
+		case 5: "bpl"
+		case 6: "bvs"
+		case 7: "bvc"
+		case 8: "bhi"
+		case 9: "bls"
+		case 10: "bge"
+		case 11: "blt"
+		case 12: "bgt"
+		case 13: "ble"
+		case 14: "b"
+		case 15: "swi"
+		}  
+	syntax = format("%s %08x", syntax_cond, target) 
 	image = format("1101%4b%s", cond, simm.image)
 	action = {
 	         if (cond == 15 ) then
@@ -382,19 +390,6 @@ op B1_thumb(cond : u4,  simm: SIMM8)
 	       	   
 	       endif;
 	       }
-
-op B2_thumb( signed_immed_11 : SIMM11)
-	syntax = format("B %s",signed_immed_11.syntax) 
-	image = format("11100%s", signed_immed_11.image)
-	action = {
-                       TMP_REG1 = __IADDR + 8;
-                       TMP_ELEV  =  coerce(s32, signed_immed_11) << 1; 
-                       TMP_REG2 = TMP_REG1 + TMP_IMM;
-                       NPC = TMP_REG2;
-	     
-	       }
-
-
 
 
 op BIC_thumb( rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
@@ -418,7 +413,7 @@ op BKPT_thumb(imm: IMM8)
 	image = format("10111110%s", imm.image)
 	action = {
                       
-
+			// !!TODO!! dubious action !
                         TMP_REG1 = __IADDR + 8;
                        TMP_ELEV  =  coerce(u32, imm) << 1; 
                        TMP_REG2 = TMP_REG1 + TMP_IMM;
@@ -426,30 +421,45 @@ op BKPT_thumb(imm: IMM8)
 	     
 	       }
 
-op BLX_thumb =BLX1_thumb | BLX2_thumb
+op BLX_thumb = BLX1_thumb | BLX2_thumb
 
 
-op BLX1_thumb(H : u2,offs :OFFS11)
-	syntax = format("BL%s %s", if H == 1 then "X" else "" endif, offs.syntax)
-	image  = format("111%2b%s",H,offs.image)
+op BLX1_thumb(H : u2, offs :OFFS11)
+	target = __IADDR + 4 + (coerce(s32, offs) << 1)
+	syntax =
+		if H == 0 then format("b %08x", target)
+		else format("bl%s %08x", if H == 1 then "X" else "" endif, offs)
+		endif
+	image  = format("111%2b%s", H, offs.image)
 	action = {
-                                   
-                 if (H == 2) then
-                           Set_ARM_GPR(14, __IADDR + 4 +(coerce(s32,offs) << 12));
-                 else 
-                 if (H == 3) then
-			    NPC = Get_ARM_GPR(14) + (coerce(u32, offs) << 1);
-                            Set_ARM_GPR(14, (__IADDR + 2) | 1);           
-                 else 
-                 if (H == 1) then
-                          Set_ARM_GPR(15, (Get_ARM_GPR(14) + (coerce(u32, offs) << 1)) & 0xfffffffc);
-			  Set_ARM_GPR(14 , (__IADDR + 2) | 1);
-                          TBIT = 0;   
-                  endif;
-                  endif;
-                  endif;        
-	    	       
-                    }
+		switch(H) {
+		case 0b00:
+			NPC = target;
+		case 0b01:
+			Set_ARM_GPR(15, (Get_ARM_GPR(14) + (coerce(u32, offs) << 1)) & 0xfffffffc);
+			Set_ARM_GPR(14 , (__IADDR + 2) | 1);
+			TBIT = 0;
+		case 0b10:
+			Set_ARM_GPR(14, __IADDR + 4 +(coerce(s32, offs) << 12));
+		case 0b11:
+			NPC = Get_ARM_GPR(14) + (coerce(u32, offs) << 1);
+			Set_ARM_GPR(14, (__IADDR + 2) | 1);           		
+		};
+}
+
+/*op B2_thumb( signed_immed_11 : SIMM11)
+	target = __IADDR + 8 + (coerce(s32, signed_immed_11) << 1)
+	syntax = format("b %08x", target) 
+	image = format("11100%s", signed_immed_11.image)
+	action = {
+                       TMP_REG1 = __IADDR + 8;
+                       TMP_ELEV  =  coerce(s32, signed_immed_11) << 1; 
+                       TMP_REG2 = TMP_REG1 + TMP_IMM;
+                       NPC = TMP_REG2;
+	     
+	       }*/
+
+
 
 op BLX2_thumb( rm: REG_INDEX)
 	syntax = format("BLX %s", rm.syntax)
@@ -567,53 +577,54 @@ op EOR_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
 	}
 
 op LDMIA_thumb(rn: REG_THUMB_INDEX, llist: THUMB_REG_LIST)
-   syntax = format("LDMIA %s!, {%s}", rn.syntax, llist.syntax)
-   image = format("11001%s%s", rn.image, llist.image)
-   action = {
-		  //reg_list.action;
-                  TMP_REGLIST = llist;		  
-		  //Compute number of set bits in the register list to compute the start address
-		  TMP_IMM  = 0;
-		  TMP_SETBIT = 0;
-		  B15SET = 0;
-                  TMP_REG1 = GPR[rn];
-		  number_of_set_bits_in;
-                  TMP_START_ADDR = TMP_REG1; 
-		  TMP_END_ADDR = TMP_REG1 + (TMP_SETBIT * 4) - 4;
-                  TMP_IMM = 0;
-                  boucle;
-                  TMP_END_ADDR = TMP_START_ADDR - 4;
-                  GPR[rn] = TMP_REG1 + TMP_SETBIT * 4;              
- //Note that the assert mode is not implemented, programmer may take
-  //		  care of the address in paramater !                            
+	syntax = format("LDMIA %s!, {%s}", rn.syntax, llist.syntax)
+	image = format("11001%s%s", rn.image, llist.image)
+	action = {
+		TMP_REGLIST = llist;		  
 
-             }
-   number_of_set_bits_in = {
-	     //Count the amount of bits into the list
-             if (TMP_IMM != 8) then
-		  if (TMP_REGLIST & 1 == 1) then
-		     TMP_SETBIT = TMP_SETBIT + 1;
-		     if (TMP_IMM == 7) then
-			B15SET = 1;
-		     endif;		     
-		  endif;
-		  TMP_REGLIST = TMP_REGLIST >> 1;
-		  TMP_IMM = TMP_IMM + 1;
-		  number_of_set_bits_in;
-	       endif;
-	       }  
+		// Compute number of set bits in the register list to compute the start address
+		TMP_IMM  = 0;
+		TMP_SETBIT = 0;
+		B15SET = 0;
+		TMP_REG1 = GPR[rn];
+		number_of_set_bits_in;
+		TMP_START_ADDR = TMP_REG1; 
+		TMP_END_ADDR = TMP_REG1 + (TMP_SETBIT * 4) - 4;
+		TMP_IMM = 0;
+		boucle;
+		TMP_END_ADDR = TMP_START_ADDR - 4;
+		GPR[rn] = TMP_REG1 + TMP_SETBIT * 4;              
+
+		//Note that the assert mode is not implemented, programmer may take
+		//		  care of the address in paramater !                            
+	}
+
+	number_of_set_bits_in = {
+		//Count the amount of bits into the list
+		if (TMP_IMM != 8) then
+			if (TMP_REGLIST & 1 == 1) then
+				TMP_SETBIT = TMP_SETBIT + 1;
+				if (TMP_IMM == 7) then
+					B15SET = 1;
+				endif;		     
+			endif;
+			TMP_REGLIST = TMP_REGLIST >> 1;
+			TMP_IMM = TMP_IMM + 1;
+			number_of_set_bits_in;
+		endif;
+	}  
 
     boucle = {
-               if (TMP_IMM != 8) then
-                    if (TMP_REGLIST & 1 == 1) then
-		        GPR[TMP_IMM] = M[TMP_START_ADDR];
-			TMP_START_ADDR = TMP_START_ADDR + 4;
-		    endif;
-		  TMP_REGLIST = TMP_REGLIST >> 1;
-                  TMP_IMM = TMP_IMM + 1;
-	          boucle;
-                endif;
-               }
+		if (TMP_IMM != 8) then
+			if (TMP_REGLIST & 1 == 1) then
+				GPR[TMP_IMM] = M[TMP_START_ADDR];
+				TMP_START_ADDR = TMP_START_ADDR + 4;
+			endif;
+			TMP_REGLIST = TMP_REGLIST >> 1;
+			TMP_IMM = TMP_IMM + 1;
+			boucle;
+		endif;
+	}
 
 op LDR_thumb = LDR_imm_thumb | LDR_shr_thumb | LDR_imm2_thumb| LDR_imm3_thumb
 
@@ -998,61 +1009,61 @@ op ORR_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
 
 
 op POP_thumb(R: setR_T, llist: THUMB_REG_LIST)
-   syntax = format("POP {%s}", llist.syntax)
-   image = format("1011110%s%s", R.image, llist.image)
-   action = {
-	  
-                 // reg_list.action;
-		  TMP_REGLIST = llist;		  
-		  //Compute number of set bits in the register list to compute the start address
-		  TMP_IMM  = 0;
-		  TMP_SETBIT = 0;
-		  B15SET = 0;
-                  TMP_REG1 = Get_ARM_GPR(13);
-		  number_of_set_bits_in;
-                  TMP_START_ADDR = TMP_REG1; 
-		  TMP_END_ADDR = TMP_REG1 + ((R + TMP_SETBIT) * 4  ) ;
-                  TMP_IMM = 0;
-                  boucle;
-		  if (R == 1) then
-		     TMP_REG2 = M[TMP_START_ADDR];
-		     TMP_START_ADDR = TMP_START_ADDR + 4;
-		     TBIT = TMP_REG2<0..0>;
-		     TFLAG = TBIT;
-		     TMP_START_ADDR = TMP_START_ADDR + 4;
-		  endif;
-                  Set_ARM_GPR(13, TMP_END_ADDR);
-                            
- //Note that the assert mode is not implemented, programmer may take
-  //		  care of the address in paramater !                            
+	syntax = format("POP {%s}", llist.syntax)
+	image = format("1011110%s%s", R.image, llist.image)
+	action = {  
+		// reg_list.action;
+		TMP_REGLIST = llist;		  
 
-             }
-   number_of_set_bits_in = {
-	     //Count the amount of bits into the list
-             if (TMP_IMM != 8) then
-		  if (TMP_REGLIST & 1 == 1) then
-		     TMP_SETBIT = TMP_SETBIT + 1;
-		     if (TMP_IMM == 7) then
-			B15SET = 1;
-		     endif;		     
-		  endif;
-		  TMP_REGLIST = TMP_REGLIST >> 1;
-		  TMP_IMM = TMP_IMM + 1;
-		  number_of_set_bits_in;
-	       endif;
-	       }  
+		//Compute number of set bits in the register list to compute the start address
+		TMP_IMM  = 0;
+		TMP_SETBIT = 0;
+		B15SET = 0;
+		TMP_REG1 = Get_ARM_GPR(13);
+		number_of_set_bits_in;
+		TMP_START_ADDR = TMP_REG1; 
+		TMP_END_ADDR = TMP_REG1 + ((R + TMP_SETBIT) * 4  ) ;
+		TMP_IMM = 0;
+		boucle;
+		if (R == 1) then
+			TMP_REG2 = M[TMP_START_ADDR];
+			TMP_START_ADDR = TMP_START_ADDR + 4;
+			TBIT = TMP_REG2<0..0>;
+			TFLAG = TBIT;
+			TMP_START_ADDR = TMP_START_ADDR + 4;
+		endif;
+		Set_ARM_GPR(13, TMP_END_ADDR);
+                            
+ 		// Note that the assert mode is not implemented,
+ 		// programmer may take care of the address in paramater !                            
+	}
+
+	number_of_set_bits_in = {
+		// Count the amount of bits into the list
+		if (TMP_IMM != 8) then
+			if (TMP_REGLIST & 1 == 1) then
+				TMP_SETBIT = TMP_SETBIT + 1;
+				if (TMP_IMM == 7) then
+					B15SET = 1;
+				endif;		     
+			endif;
+		  	TMP_REGLIST = TMP_REGLIST >> 1;
+			TMP_IMM = TMP_IMM + 1;
+			number_of_set_bits_in;
+		endif;
+	}  
 
     boucle = {
-               if (TMP_IMM != 8) then
-                    if (TMP_REGLIST & 1 == 1) then
-		        GPR[TMP_IMM] = M[TMP_START_ADDR];
-			TMP_START_ADDR = TMP_START_ADDR + 4;
-		    endif;
-		  TMP_REGLIST = TMP_REGLIST >> 1;
-                  TMP_IMM = TMP_IMM + 1;
-	          boucle;
-                endif;
-               }
+		if (TMP_IMM != 8) then
+			if (TMP_REGLIST & 1 == 1) then
+				GPR[TMP_IMM] = M[TMP_START_ADDR];
+				TMP_START_ADDR = TMP_START_ADDR + 4;
+			endif;
+			TMP_REGLIST = TMP_REGLIST >> 1;
+			TMP_IMM = TMP_IMM + 1;
+			boucle;
+		endif;
+	}
 
 
 op PUSH_thumb(R: setR_T, llist: THUMB_REG_LIST)
@@ -1421,3 +1432,47 @@ op TST_thumb(rn : REG_THUMB_INDEX, rm: REG_THUMB_INDEX)
        endif; 
       
 	}
+
+
+// start of work for THUMB-2
+
+/*op thumb32(x: thumb32_list)
+	image = x.image
+	syntax = x.syntax
+	action = {
+		NPC = PC + 4;
+		PC = PC + 4;
+		x.action;
+		PC = NPC;
+	}*/
+
+/*
+// thumb-32 temporaries
+var I1[1, card(1)]
+var I2[1, card(1)]
+var imm32[1, int(32)]
+var next_instr_addr[1, card(32)]
+	
+op thumb32_list = BL_thumb
+
+macro BranchTo(addr) = PC = addr
+macro BranchWritePC(addr) = BranchTo(addr<31..1> :: 0<0..0>)
+
+// BL from Thumb2 (is equivalent to two successive Thumb1 16-bits BL)
+// In Thumb32, the 16-bits lonely version is now forbidden.
+op BL_thumb(J1: card(1), J2: card(1), S: card(1), imm10: card(10), imm11: card(11))
+	addr = __IADDR + 4 + coerce(int(32), S :: ~(J1 ^ S) :: ~(J2 ^ S) :: imm10 :: imm11 :: 0<0..0>)
+	syntax = format("bl %08x", addr)
+	image = format("11110 %1b %10b 11 %1b 1 %1b %11b", S, imm10, J1, J2, imm11)
+	action = {
+		// if ConditionPassed then
+			// targetInstrSet = CurrentInstrSet();
+			// if InITBlock() && !LastInITBlock() then UNPREDICTABLE; endif;
+			next_instr_addr = PC;
+			LR = next_instr_addr<31..1> :: 1<0..0>;
+			BranchWritePC(addr); 
+		// endif
+	}*/
+
+
+
