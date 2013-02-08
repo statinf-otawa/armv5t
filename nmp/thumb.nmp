@@ -350,12 +350,10 @@ op ASR2_thumb(rd : REG_THUMB_INDEX, rs:REG_THUMB_INDEX )
 ///////////////////////////////////////////
 // Branch instruction, conditional if L bit is set
 ///////////////////////////////////////////
-op B_thumb = B1_thumb 
-//| B2_thumb en conflit avec BLX il vaut mieux utiliser BLX
 
 // B1_thumb aussi est en conflit avec SWI , je traite ici
 //l'interruption ie: op SWI
-op B1_thumb(cond : u4,  simm: SIMM8)
+op B_thumb(cond : u4,  simm: SIMM8)
 	target = __IADDR + 4 + (coerce(s32, simm) << 1)
 	syntax_cond =
 		switch (cond)  {
@@ -379,17 +377,17 @@ op B1_thumb(cond : u4,  simm: SIMM8)
 	syntax = format("%s %08x", syntax_cond, target) 
 	image = format("1101%4b%s", cond, simm.image)
 	action = {
-	         if (cond == 15 ) then
-                                 "swi_impl"(simm);
-                  endif;  	        
-	       if (calcul_condition(cond)) then
-                       TMP_REG1 = __IADDR + 8;
-                       TMP_IMM = coerce(s32, simm) << 1; 
-                       TMP_REG2 = TMP_REG1 + TMP_IMM;
-                       NPC = TMP_REG2;
-	       	   
-	       endif;
-	       }
+		if (cond == 15 ) then
+			"swi_impl"(simm);
+		else  	        
+			if (calcul_condition(cond)) then
+				TMP_REG1 = __IADDR + 4;
+				TMP_IMM = coerce(s32, simm) << 1; 
+				TMP_REG2 = TMP_REG1 + TMP_IMM;
+				NPC = TMP_REG2;	       	   
+			endif;
+		endif;
+	}
 
 
 op BIC_thumb( rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
@@ -447,19 +445,6 @@ op BLX1_thumb(H : u2, offs :OFFS11)
 		};
 }
 
-/*op B2_thumb( signed_immed_11 : SIMM11)
-	target = __IADDR + 8 + (coerce(s32, signed_immed_11) << 1)
-	syntax = format("b %08x", target) 
-	image = format("11100%s", signed_immed_11.image)
-	action = {
-                       TMP_REG1 = __IADDR + 8;
-                       TMP_ELEV  =  coerce(s32, signed_immed_11) << 1; 
-                       TMP_REG2 = TMP_REG1 + TMP_IMM;
-                       NPC = TMP_REG2;
-	     
-	       }*/
-
-
 
 op BLX2_thumb( rm: REG_INDEX)
 	syntax = format("BLX %s", rm.syntax)
@@ -476,11 +461,10 @@ op BX_thumb(rm : REG_INDEX)
 	syntax = format("BX %s", rm.syntax)
 	image  = format("010001110%s000", rm.image)
 	action = {
-                    
-               TMP_REG1 = Get_ARM_GPR(rm); 
-               TFLAG = TMP_REG1<0..0>;
-               NPC = coerce(u32, TMP_REG1<31..1>) << 1;
-	       }
+		TMP_REG1 = Get_ARM_GPR(rm); 
+		TFLAG = TMP_REG1<0..0>;
+		NPC = coerce(u32, TMP_REG1<31..1>) << 1;
+	}
 
 
 
