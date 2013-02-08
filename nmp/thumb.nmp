@@ -67,6 +67,17 @@ mode OFFS11(n: u11) = n
 
 mode REG_THUMB_INDEX(ro: thumb_index) = ro
 	syntax = format("r%d", ro)
+	hsyntax =
+		switch(ro) {
+		case 0: "r8"
+		case 1: "r9"
+		case 2: "sl"
+		case 3: "fp"
+		case 4: "ip"
+		case 5: "sp"
+		case 6: "lr"
+		case 7: "pc"
+	}
 	image  = format("%3b", ro)
 
 
@@ -87,9 +98,6 @@ macro syntax_thumb_reg(on_off, num_reg) = \
 	else \
 		"" \
 	endif \
-
-//macro syntax_thumb_reg_format(start, idx, v8) = \
-//	format("%s%s", if start == idx then "" else if v8<idx..idx> == 0 then "" else ", " endif endif, syntax_thumb_reg(v8<idx..idx>, idx)) \
 
 macro syntax_thumb_reg_format(idx, v8) = \
 	format("%s%s", if v8<idx..idx> == 0 then "" else ", " endif, syntax_thumb_reg(v8<idx..idx>, idx)) \
@@ -144,8 +152,8 @@ op thumb16_list = ADD_thumb | AND_thumb | ASR_thumb | B_thumb | BIC_thumb
 | ORR_thumb | POP_thumb | PUSH_thumb | ROR_thumb | SBC_thumb
 | STMIA_thumb | STR_thumb | STRB_thumb | STRH_thumb | SUB_thumb
 | TST_thumb  |  MOV_thumb  
-//MOV_thumb use ADD Rd, 0, Rm
-//| SWI_thumb  remplac� par B1_thumb cond = 1111
+
+
 ///////////////////////////////////////////
 // I Arithmetic Instructions 
 ///////////////////////////////////////////
@@ -157,7 +165,7 @@ op ADD_thumb = ADC_thumb | ADD_imm1_thumb | ADD_imm2_thumb | ADD_imm3_thumb
 
        
 op ADC_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX)
-	syntax = format("ADC %s, %s",  rd.syntax, rn.syntax)
+	syntax = format("adcs %s, %s",  rd.syntax, rn.syntax)
 	image = format("0100000101%s%s", rn.image, rd.image)
 	action = {
 		TMP_REG1 = Get_THUMB_GPR(rd);
@@ -178,85 +186,83 @@ op ADC_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX)
 op ADD_imm1_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm:IMM3)
 	syntax = 
 		if imm == 0 then
-			format("MOV %s, %s", rd.syntax, rn.syntax)
+			format("movs %s, %s", rd.syntax, rn.syntax)
 		else
-			format("ADD %s, %s, %s", rd.syntax, rn.syntax, imm.syntax)
+			format("adds %s, %s, %s", rd.syntax, rn.syntax, imm.syntax)
 		endif
 	image = format("0001110%s%s%s", imm.image, rn.image, rd.image)
 	action = {
-	            TMP_REG1 = Get_THUMB_GPR(rd);
-                    TMP_REG2 = Get_THUMB_GPR(rn);
-		    TMP_SWORD = TMP_REG2 + imm; 
+		TMP_REG1 = Get_THUMB_GPR(rd);
+		TMP_REG2 = Get_THUMB_GPR(rn);
+		TMP_SWORD = TMP_REG2 + imm; 
 		GPR[rd] = TMP_SWORD;
-                    CFLAG =  CarryFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD);
-		    VFLAG = OverflowFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD); 
-		    TMP_REG1 = Get_THUMB_GPR(rd);
-		    NFLAG = TMP_REG1<31..31>; 
-		    if TMP_REG1 == 0 then 
-		        ZFLAG = 1; 
-	            else 
-			 ZFLAG = 0; 
-	            endif; 
-		   
-	  	}
+		CFLAG =  CarryFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD);
+		VFLAG = OverflowFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD); 
+		TMP_REG1 = Get_THUMB_GPR(rd);
+		NFLAG = TMP_REG1<31..31>; 
+		if TMP_REG1 == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif;    
+	}
 
 op ADD_imm2_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
-	syntax = format("ADD %s, %s", rd.syntax,imm.syntax)
+	syntax = format("adds %s, %s", rd.syntax,imm.syntax)
 	image = format("00110%s%s", rd.image, imm.image)
 	action = {
-	            TMP_REG1 = Get_THUMB_GPR(rd);
-                    TMP_SWORD = TMP_REG1 + imm;
+		TMP_REG1 = Get_THUMB_GPR(rd);
+		TMP_SWORD = TMP_REG1 + imm;
 		GPR[rd] = TMP_SWORD;
-		    CFLAG =  CarryFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD);
-		    VFLAG = OverflowFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD); 
-		    TMP_REG1 = Get_THUMB_GPR(rd);
-		    NFLAG = TMP_REG1<31..31>; 
-		    if TMP_REG1 == 0 then 
-		        ZFLAG = 1; 
-	            else 
-			 ZFLAG = 0; 
-	            endif;  
-	  	}
+		CFLAG = CarryFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD);
+		VFLAG = OverflowFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD); 
+		TMP_REG1 = Get_THUMB_GPR(rd);
+		NFLAG = TMP_REG1<31..31>; 
+		if TMP_REG1 == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif;  
+	}
 
 op ADD_reg1_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm: REG_THUMB_INDEX)
-	syntax = format("ADD %s, %s, %s", rd.syntax, rn.syntax, rm.syntax)
+	syntax = format("adds %s, %s, %s", rd.syntax, rn.syntax, rm.syntax)
 	image = format("0001100%s%s%s", rm.image, rn.image, rd.image)
 	action = {
-	            TMP_REG1 = Get_THUMB_GPR(rm);
-                    TMP_REG2 = Get_THUMB_GPR(rn);
-		    TMP_SWORD = TMP_REG2 + TMP_REG1;
+		TMP_REG1 = Get_THUMB_GPR(rm);
+		TMP_REG2 = Get_THUMB_GPR(rn);
+		TMP_SWORD = TMP_REG2 + TMP_REG1;
 		GPR[rd] = TMP_SWORD;
-                    TMP_REG1 = Get_THUMB_GPR(rd);
-                    CFLAG =  CarryFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD);
-		    VFLAG = OverflowFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD); 
-		    TMP_REG1 = Get_THUMB_GPR(rd);
-		    NFLAG = TMP_REG1<31..31>; 
-		    if TMP_REG1 == 0 then 
-		        ZFLAG = 1; 
-	            else 
-			 ZFLAG = 0; 
-	            endif;
-		   
-	  	}
+		TMP_REG1 = Get_THUMB_GPR(rd);
+		CFLAG =  CarryFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD);
+		VFLAG = OverflowFromAdd(TMP_REG2,TMP_REG1,TMP_SWORD); 
+		TMP_REG1 = Get_THUMB_GPR(rd);
+		NFLAG = TMP_REG1<31..31>; 
+		if TMP_REG1 == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif;
+	}
 
 op ADD_reg2_thumb( H: u1, rd : REG_THUMB_INDEX, rm: REG_INDEX)
-	syntax = format("ADD %s, %s", rd.syntax, rm.syntax)
+	syntax = format("add %s, %s", rd.syntax, rm.syntax)
 	image = format("01000100%1b%s%s", H, rm.image, rd.image)
 	action = {
-	            TMP_REG1 = Get_ARM_GPR(rm);
-                    TMP_REG2 = Get_ARM_GPR(rd + if H == 1 then 8 else 0 endif);
-		    Set_ARM_GPR(rd, TMP_REG2 + TMP_REG1);
-	  	}
+		TMP_REG1 = Get_ARM_GPR(rm);
+		TMP_REG2 = Get_ARM_GPR(rd + if H == 1 then 8 else 0 endif);
+		Set_ARM_GPR(rd, TMP_REG2 + TMP_REG1);
+	}
 
 op ADD_imm3_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
-	syntax = format("ADD %s, %s", rd.syntax,imm.syntax)
+	syntax = format("add %s, pc, %s", rd.syntax,imm.syntax)
 	image = format("10100%s%s", rd.image, imm.image)
 	action = {
 		GPR[rd] = ((__IADDR + 4) & 0xfffffffc) + (coerce(u32, imm) << 2);
 	}
 
 op ADD_imm4_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
-	syntax = format("ADD %s, %s", rd.syntax,imm.syntax)
+	syntax = format("add %s, sp, %s", rd.syntax,imm.syntax)
 	image = format("10101%s%s", rd.image, imm.image)
 	action = {
 		GPR[rd] = Get_ARM_GPR(13) + (coerce(u32, imm) << 2);
@@ -264,85 +270,79 @@ op ADD_imm4_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
 
 
 op ADD_imm5_thumb( imm: IMM7)
-	syntax = format("ADD SP, %s", imm.syntax)
+	syntax = format("add sp, sp, #%d", imm * 4)
 	image = format("101100000%s", imm.image)
 	action = {
 		Set_ARM_GPR(13, Get_ARM_GPR(13) + (coerce(u32, imm) << 2));
 	}
 
 op AND_thumb( rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-   syntax = format("AND %s, %s", rd.syntax, rm.syntax)
-   image = format("0100000000%s%s", rm.image, rd.image)
-   action = {
-	     TMP_REG1 = GPR[rd] & GPR[rm];
-              NFLAG = TMP_REG1<31..31>; 
-	      if TMP_REG1 == 0 then 
-		 ZFLAG = 1; 
-	      else 
-		 ZFLAG = 0; 
-	      endif; 
-              GPR[rd] = TMP_REG1;
-	       
+	syntax = format("ands %s, %s", rd.syntax, rm.syntax)
+	image = format("0100000000%s%s", rm.image, rd.image)
+	action = {
+		TMP_REG1 = GPR[rd] & GPR[rm];
+		NFLAG = TMP_REG1<31..31>; 
+		if TMP_REG1 == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 
+		GPR[rd] = TMP_REG1;   
 	}
-
 
 op ASR_thumb = ASR1_thumb | ASR2_thumb
 
 op ASR1_thumb(rd : REG_THUMB_INDEX, rm:REG_THUMB_INDEX, imm : IMM5 )
-	syntax = format("ASR %s, %s, %s", rd.syntax, rm.syntax, imm.syntax)
+	syntax = format("asrs %s, %s, %s", rd.syntax, rm.syntax, imm.syntax)
 	image = format("00010%s%s%s", imm.image, rm.image,rd.image)
 	action = {
-	     if imm == 0 then
-                 TMP_REG1 = GPR[rm];
-                 TMP_BIT = TMP_REG1<31..31>;
-                 if  TMP_BIT == 0 then
-                     GPR[rd] = 0;   
-                 else 
-                     TMP_REG2 = 0b11111111111111111111111111111111;
-                 endif;
-             else
-                 TMP_IMM = imm -1;
-                 CFLAG = TMP_REG1<TMP_IMM..TMP_IMM>;
-                 TMP_REG2 = TMP_REG1 >> imm;
-             endif;
-             NFLAG = TMP_REG2<31..31>;
-	         if TMP_REG2 == 0 then
-		   ZFLAG = 1;
-	         else
-		   ZFLAG = 0;
-                 endif;
-             GPR[rd] = TMP_REG2;
-         
+		if imm == 0 then
+			TMP_REG1 = GPR[rm];
+			TMP_BIT = TMP_REG1<31..31>;
+			if  TMP_BIT == 0 then
+				GPR[rd] = 0;   
+			else 
+				TMP_REG2 = 0b11111111111111111111111111111111;
+			endif;
+		else
+			TMP_IMM = imm -1;
+			CFLAG = TMP_REG1<TMP_IMM..TMP_IMM>;
+			TMP_REG2 = TMP_REG1 >> imm;
+		endif;
+		NFLAG = TMP_REG2<31..31>;
+		if TMP_REG2 == 0 then
+			ZFLAG = 1;
+		else
+			ZFLAG = 0;
+		endif;
+		GPR[rd] = TMP_REG2; 
 	}
 
 op ASR2_thumb(rd : REG_THUMB_INDEX, rs:REG_THUMB_INDEX )
-	syntax = format("ASR %s, %s", rd.syntax, rs.syntax)
+	syntax = format("asrs %s, %s", rd.syntax, rs.syntax)
 	image = format("0100000100%s%s", rs.image,rd.image)
 	action = {
-                  TMP_IMM = GPR[rs]<7..0>;
-                  TMP_REG1 = GPR[rd];
-                  if TMP_IMM == 0 then
-                  else
-                     if TMP_IMM < 32 then
-                        TMP_IMM2 = TMP_IMM - 1;
-                        CFLAG = GPR[rd]<TMP_IMM2..TMP_IMM2>;
-                        GPR[rd] = TMP_REG1 >> TMP_IMM;
-                     else
-                        CFLAG = TMP_REG1<31..31>;
-                        if CFLAG == 0 then
-                           GPR[rd] = 0;
-                        else
-                           GPR[rd] =	UNPREDICTABLE;
-                        endif;
-                      endif;
-                   endif;
-                  NFLAG = GPR[rd]<31..31>;
-                  if GPR[rd] == 0 then
-		        ZFLAG = 1;
-	          else
-		        ZFLAG = 0;
-                  endif; 
-         
+		TMP_IMM = GPR[rs]<7..0>;
+		TMP_REG1 = GPR[rd];
+		if TMP_IMM == 0 then
+		else if TMP_IMM < 32 then
+			TMP_IMM2 = TMP_IMM - 1;
+			CFLAG = GPR[rd]<TMP_IMM2..TMP_IMM2>;
+			GPR[rd] = TMP_REG1 >> TMP_IMM;
+		else
+			CFLAG = TMP_REG1<31..31>;
+			if CFLAG == 0 then
+				GPR[rd] = 0;
+			else
+				GPR[rd] =	UNPREDICTABLE;
+			endif;
+		endif; endif;
+		NFLAG = GPR[rd]<31..31>;
+		if GPR[rd] == 0 then
+			ZFLAG = 1;
+		else
+			ZFLAG = 0;
+		endif;  
 	}
 
 
@@ -351,8 +351,6 @@ op ASR2_thumb(rd : REG_THUMB_INDEX, rs:REG_THUMB_INDEX )
 // Branch instruction, conditional if L bit is set
 ///////////////////////////////////////////
 
-// B1_thumb aussi est en conflit avec SWI , je traite ici
-//l'interruption ie: op SWI
 op B_thumb(cond : u4,  simm: SIMM8)
 	target = __IADDR + 4 + (coerce(s32, simm) << 1)
 	syntax_cond =
@@ -391,43 +389,37 @@ op B_thumb(cond : u4,  simm: SIMM8)
 
 
 op BIC_thumb( rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-   syntax = format("BIC %s, %s", rd.syntax, rm.syntax)
-   image = format("0100001110%s%s", rm.image, rd.image)
-   action = {
-	    TMP_REG1 = GPR[rd];
-          //  TMP_REG2 = !GPR[rm]<31..0>;
-            GPR[rd] = TMP_REG1 & TMP_REG2;
-            NFLAG = GPR[rd]<31..31>;
-           TMP_REG1 = GPR[rd];
-	   if TMP_REG1 == 0 then 
-		 ZFLAG = 1; 
-	      else 
-		 ZFLAG = 0; 
-	      endif; 
-	   }
+	syntax = format("bics %s, %s", rd.syntax, rm.syntax)
+	image = format("0100001110%s%s", rm.image, rd.image)
+	action = {
+		TMP_REG1 = GPR[rd];
+		GPR[rd] = TMP_REG1 & TMP_REG2;
+		NFLAG = GPR[rd]<31..31>;
+		TMP_REG1 = GPR[rd];
+		if TMP_REG1 == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 
+	}
 
 op BKPT_thumb(imm: IMM8)
-        syntax = format("BKPT %s",imm.syntax) 
+	syntax = format("bkpt %s",imm.syntax) 
 	image = format("10111110%s", imm.image)
 	action = {
-                      
-			// !!TODO!! dubious action !
-                        TMP_REG1 = __IADDR + 8;
-                       TMP_ELEV  =  coerce(u32, imm) << 1; 
-                       TMP_REG2 = TMP_REG1 + TMP_IMM;
-                       NPC = TMP_REG2;
-	     
-	       }
+	}
 
 op BLX_thumb = BLX1_thumb | BLX2_thumb
-
 
 op BLX1_thumb(H : u2, offs :OFFS11)
 	target = __IADDR + 4 + (coerce(s32, offs) << 1)
 	syntax =
-		if H == 0 then format("b %08x", target)
-		else format("bl%s %08x", if H == 1 then "X" else "" endif, offs)
-		endif
+		switch(H) {
+		case 0b00: format("b %08x", target)
+		case 0b01: format("blx lr, #%08x", (coerce(s32, offs) << 1) & 0xfffffffc)
+		case 0b10: format("add lr, pc, #%d", coerce(s32, offs) << 12)
+		case 0b11: format("bl lr, #%08x", (coerce(s32, offs) << 1))
+		}
 	image  = format("111%2b%s", H, offs.image)
 	action = {
 		switch(H) {
@@ -447,18 +439,18 @@ op BLX1_thumb(H : u2, offs :OFFS11)
 
 
 op BLX2_thumb( rm: REG_INDEX)
-	syntax = format("BLX %s", rm.syntax)
+	syntax = format("blx %s", rm.syntax)
 	image  = format("010001111%s000",rm.image)
 	action = {
-                   Set_ARM_GPR(14, (__IADDR + 2) | 1);
-                   TMP_REG1 = Get_ARM_GPR(rm);
-                   TFLAG = TMP_REG1<0..0>;
-                   NPC = TMP_REG1 & 0xfffffffe;
-	       }
+		Set_ARM_GPR(14, (__IADDR + 2) | 1);
+		TMP_REG1 = Get_ARM_GPR(rm);
+		TFLAG = TMP_REG1<0..0>;
+		NPC = TMP_REG1 & 0xfffffffe;
+	}
 
 
 op BX_thumb(rm : REG_INDEX)
-	syntax = format("BX %s", rm.syntax)
+	syntax = format("bx %s", rm.syntax)
 	image  = format("010001110%s000", rm.image)
 	action = {
 		TMP_REG1 = Get_ARM_GPR(rm); 
@@ -469,99 +461,94 @@ op BX_thumb(rm : REG_INDEX)
 
 
 op COMPARE_thumb = CMN_shr_thumb | CMP_imm_thumb | CMP_shr1_thumb
- | CMP_shr2_thumb
+				 | CMP_shr2_thumb
 
 op CMN_shr_thumb(rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-   syntax = format("CMN %s, %s", rn.syntax, rm.syntax)
-   image = format("0100001011%s%s", rm.image,  rn.image)
-   action= {
-             TMP_REG1 = GPR[rn];
-             TMP_REG2 = GPR[rm];
-	     Temp = TMP_REG1 + TMP_REG2; 
-	     NFLAG = Temp<31..31>; 
-	     if Temp == 0 then 
-		ZFLAG = 1; 
-             else 
-	       ZFLAG = 0; 
-	     endif; 
-	     CFLAG =  CarryFromAdd(TMP_REG1,TMP_REG2,Temp); 
-	     VFLAG =  OverflowFromAdd(TMP_REG1,TMP_REG2,Temp);
+	syntax = format("cmn %s, %s", rn.syntax, rm.syntax)
+	image = format("0100001011%s%s", rm.image,  rn.image)
+	action= {
+		TMP_REG1 = GPR[rn];
+		TMP_REG2 = GPR[rm];
+		Temp = TMP_REG1 + TMP_REG2; 
+		NFLAG = Temp<31..31>; 
+		if Temp == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 
+		CFLAG =  CarryFromAdd(TMP_REG1,TMP_REG2,Temp); 
+		VFLAG =  OverflowFromAdd(TMP_REG1,TMP_REG2,Temp);
 	}
 
 
 op CMP_imm_thumb(rn : REG_THUMB_INDEX, imm : IMM8)
-	syntax = format("CMP %s, %s", rn.syntax, imm.syntax)
+	syntax = format("cmp %s, %s", rn.syntax, imm.syntax)
 	image = format("00101%s%s", rn.image, imm.image)
 	action = {
-	     TMP_REG1 = GPR[rn];
-	     Temp = TMP_REG1 - imm; 
-	     NFLAG = Temp<31..31>; 
-	     if Temp == 0 then 
-		ZFLAG = 1; 
-	     else 
-		  ZFLAG = 0; 
-	     endif; 
-	     CFLAG =  CarryFromSub(TMP_REG1,imm,Temp); 
-	     VFLAG =  OverflowFromSub(TMP_REG1,imm,Temp);
-	   
+		TMP_REG1 = GPR[rn];
+		Temp = TMP_REG1 - imm; 
+		NFLAG = Temp<31..31>; 
+		if Temp == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 
+		CFLAG =  CarryFromSub(TMP_REG1,imm,Temp); 
+		VFLAG =  OverflowFromSub(TMP_REG1,imm,Temp);
 	}
 
 op CMP_shr1_thumb(rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-   syntax = format("CMP %s, %s", rn.syntax,rm.syntax )
-   image = format("0100001010%s%s", rn.image,  rm.image)
-   action = {
-	     TMP_REG1 = GPR[rn];
-             TMP_REG2 = GPR[rm];     
-   	     Temp = TMP_REG1 - TMP_REG2; 
-	     NFLAG = Temp<31..31>; 
-	     if Temp == 0 then 
-		ZFLAG = 1; 
-	     else 
-		  ZFLAG = 0; 
-	     endif; 
-	     CFLAG =  CarryFromSub(TMP_REG1,TMP_REG2,Temp); 
-	     VFLAG =  OverflowFromSub(TMP_REG1,TMP_REG2,Temp);
+	syntax = format("cmp %s, %s", rn.syntax,rm.syntax )
+	image = format("0100001010%s%s", rn.image,  rm.image)
+	action = {
+		TMP_REG1 = GPR[rn];
+		TMP_REG2 = GPR[rm];     
+		Temp = TMP_REG1 - TMP_REG2; 
+		NFLAG = Temp<31..31>; 
+		if Temp == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 
+		CFLAG =  CarryFromSub(TMP_REG1,TMP_REG2,Temp); 
+		VFLAG =  OverflowFromSub(TMP_REG1,TMP_REG2,Temp);
 	}
 
 op CMP_shr2_thumb(H: u1, rn : REG_THUMB_INDEX, rm : REG_INDEX)
-   syntax = format("CMP %s, %s", rn.syntax,rm.syntax ) 
-   image = format("01000101%1b%s%s", H, rm.image,  rn.image)
-   action = {
-            
-	     TMP_REG1 = Get_ARM_GPR(rn + if H == 1 then 8 else 0 endif);
-             TMP_REG2 = Get_ARM_GPR(rm);     
-   	     Temp = TMP_REG1 - TMP_REG2; 
-	     NFLAG = Temp<31..31>; 
-	     if Temp == 0 then 
-		ZFLAG = 1; 
-	     else 
-		  ZFLAG = 0; 
-	     endif; 
-	     CFLAG =  CarryFromSub(TMP_REG1,TMP_REG2,Temp); 
-	     VFLAG =  OverflowFromSub(TMP_REG1,TMP_REG2,Temp);
+	syntax = format("cmp %s, %s", rn.syntax,rm.syntax ) 
+	image = format("01000101%1b%s%s", H, rm.image,  rn.image)
+	action = {        
+		TMP_REG1 = Get_ARM_GPR(rn + if H == 1 then 8 else 0 endif);
+		TMP_REG2 = Get_ARM_GPR(rm);     
+		Temp = TMP_REG1 - TMP_REG2; 
+		NFLAG = Temp<31..31>; 
+		if Temp == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 
+		CFLAG =  CarryFromSub(TMP_REG1,TMP_REG2,Temp); 
+		VFLAG =  OverflowFromSub(TMP_REG1,TMP_REG2,Temp);
 	}
 
-
-
-
 op EOR_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-   syntax = format("EOR %s, %s", rd.syntax, rm.syntax)
-   image = format("0100000001%s%s", rm.image, rd.image)
-   action = {
-       TMP_REG1 = GPR[rd];
-       TMP_REG2 = GPR[rm];
-       TMP_SWORD = TMP_REG2 ^ TMP_REG1; 
-       NFLAG = TMP_SWORD<31..31>; 
-	      if TMP_SWORD == 0 then 
-		 ZFLAG = 1; 
-	      else 
-		 ZFLAG = 0; 
-	      endif; 
-	 GPR[rd] = TMP_SWORD;
+	syntax = format("eors %s, %s", rd.syntax, rm.syntax)
+	image = format("0100000001%s%s", rm.image, rd.image)
+	action = {
+		TMP_REG1 = GPR[rd];
+		TMP_REG2 = GPR[rm];
+		TMP_SWORD = TMP_REG2 ^ TMP_REG1; 
+		NFLAG = TMP_SWORD<31..31>; 
+		if TMP_SWORD == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 
+		GPR[rd] = TMP_SWORD;
 	}
 
 op LDMIA_thumb(rn: REG_THUMB_INDEX, llist: THUMB_REG_LIST)
-	syntax = format("LDMIA %s!, {%s}", rn.syntax, llist.syntax)
+	syntax = format("ldmia %s!, {%s}", rn.syntax, llist.syntax)
 	image = format("11001%s%s", rn.image, llist.image)
 	action = {
 		TMP_REGLIST = llist;		  
@@ -613,7 +600,7 @@ op LDMIA_thumb(rn: REG_THUMB_INDEX, llist: THUMB_REG_LIST)
 op LDR_thumb = LDR_imm_thumb | LDR_shr_thumb | LDR_imm2_thumb| LDR_imm3_thumb
 
 op LDR_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
-	syntax = format("LDR %s, [%s, %s * 4]", rd.syntax, rn.syntax, imm.syntax)
+	syntax = format("ldr %s, [%s, %s * 4]", rd.syntax, rn.syntax, imm.syntax)
 	image = format("01101%s%s%s", imm.image, rn.image, rd.image)
 	action = {
 		 TMP_START_ADDR  =  GPR[rn] + imm * 4;
@@ -627,7 +614,7 @@ op LDR_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
                  } 
 
 op LDR_shr_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-	syntax = format("LDR %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
+	syntax = format("ldr %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
 	image = format("0101100%s%s%s", rm.image, rn.image, rd.image)
 	action = {
 		 TMP_START_ADDR  =  GPR[rn] + GPR[rm];
@@ -641,7 +628,7 @@ op LDR_shr_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_IND
                  } 
 
 op LDR_imm2_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
-	syntax = format("LDR %s, [PC, %s * 4]", rd.syntax, imm.syntax)
+	syntax = format("ldr %s, [PC, %s * 4]", rd.syntax, imm.syntax)
 	image = format("01001%s%s", rd.image, imm.image)
 	action = {
 	         TMP_REG1 = __IADDR + 8;
@@ -652,7 +639,7 @@ op LDR_imm2_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
                  } 
 
 op LDR_imm3_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
-	syntax = format("LDR %s, [SP, %s * 4]", rd.syntax, imm.syntax)
+	syntax = format("ldr %s, [SP, %s * 4]", rd.syntax, imm.syntax)
 	image = format("10011%s%s", rd.image, imm.image)
 	action = {
 		 TMP_START_ADDR = Get_ARM_GPR(13) + (coerce(u32, imm) << 2);
@@ -669,7 +656,7 @@ op LDR_imm3_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
 op LDRB_thumb = LDRB_imm_thumb | LDRB_shr_thumb
 
 op LDRB_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
-	syntax = format("LDRB %s, [%s, %s]", rd.syntax, rn.syntax, imm.syntax)
+	syntax = format("ldrb %s, [%s, %s]", rd.syntax, rn.syntax, imm.syntax)
 	image = format("01111%s%s%s", imm.image, rn.image, rd.image)
 	action = {
 		 TMP_START_ADDR  =  GPR[rn] + imm ;
@@ -679,7 +666,7 @@ op LDRB_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
                  } 
 
 op LDRB_shr_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-	syntax = format("LDRB %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
+	syntax = format("ldrb %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
 	image = format("0101110%s%s%s", rm.image, rn.image, rd.image)
 	action = {
 		 TMP_START_ADDR  =  GPR[rn] + GPR[rm];
@@ -692,7 +679,7 @@ op LDRB_shr_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_IN
 op LDRH_thumb = LDRH_imm_thumb | LDRH_shr_thumb
 
 op LDRH_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
-	syntax = format("LDRH %s, [%s, %s * 2]", rd.syntax, rn.syntax, imm.syntax)
+	syntax = format("ldrh %s, [%s, %s * 2]", rd.syntax, rn.syntax, imm.syntax)
 	image = format("10001%s%s%s", imm.image, rn.image, rd.image)
 	action = {
 		 TMP_START_ADDR  =  GPR[rn] + imm * 2;
@@ -703,7 +690,7 @@ op LDRH_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
 
 
 op LDRH_shr_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-	syntax = format("LDRH %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
+	syntax = format("ldrh %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
 	image = format("0101101%s%s%s", rm.image, rn.image, rd.image)
 	action = {
 		 TMP_START_ADDR  =  GPR[rn] + GPR[rm];
@@ -720,7 +707,7 @@ op LDRH_shr_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_IN
 op LDRS_thumb = LDRSB_thumb | LDRSH_thumb
 
 op LDRSB_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-	syntax = format("LDRSB %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
+	syntax = format("ldrsb %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
 	image = format("0101011%s%s%s", rm.image, rn.image, rd.image)
 	action = {
 		 
@@ -739,7 +726,7 @@ op LDRSB_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX
                  } 
 
 op LDRSH_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-	syntax = format("LDRSH %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
+	syntax = format("ldrsh %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
 	image = format("0101111%s%s%s", rm.image, rn.image, rd.image)
 	action = {
 		 
@@ -765,127 +752,108 @@ op LDRSH_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX
 op LSL_thumb = LSL_imm_thumb | LSL_shr_thumb
 
 op LSL_imm_thumb( rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX, imm: IMM5)
-	syntax = format("LSL %s, %s, %s", rd.syntax, rm.syntax, imm.syntax)
+	syntax = format("lsls %s, %s, %s", rd.syntax, rm.syntax, imm.syntax)
 	image = format("00000%s%s%s", imm.image, rm.image, rd.image)
 	action = {  
-	       if (imm == 0) then
-	         TMP_REG1 = GPR[rm];
-                else
-                   TMP_IMM = 32 - imm;
-		   CFLAG = GPR[rm]<TMP_IMM..TMP_IMM>;
-		   TMP_REG1 = GPR[rm] << imm;
-	        endif;
+		if(imm == 0) then
+			TMP_REG1 = GPR[rm];
+		else
+			TMP_IMM = 32 - imm;
+			CFLAG = GPR[rm]<TMP_IMM..TMP_IMM>;
+			TMP_REG1 = GPR[rm] << imm;
+		endif;
 		NFLAG = TMP_REG1<31..31>;
 		if TMP_REG1 == 0 then 
-		   ZFLAG = 1; 
-	        else 
-		   ZFLAG = 0; 
-	        endif; 	   
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 	   
 		GPR[rd]= TMP_REG1;
-            }
+	}
 
 op LSL_shr_thumb( rd : REG_THUMB_INDEX, rs : REG_THUMB_INDEX)
-	syntax = format("LSL %s, %s", rd.syntax, rs.syntax)
+	syntax = format("lsls %s, %s", rd.syntax, rs.syntax)
 	image = format("0100000010%s%s", rs.image, rd.image)
 	action = {  
-		 TMP_IMM = GPR[rs]<7..0>;
-		 TMP_REG1 = GPR[rd];
-	       if (TMP_IMM == 0) then
-	         else
-		   if (TMP_IMM < 32) then
-		      TMP_IMM2 = 32 - TMP_IMM;
-		      CFLAG = TMP_REG1<TMP_IMM2..TMP_IMM2>;
-		      TMP_REG1 = TMP_REG1 << TMP_IMM;
-		      
-		   else	
-                       if (TMP_IMM == 32)  then
-		           CFLAG = TMP_REG1<0..0>;
-			   TMP_REG1 = 0;
-
-		       else 
-                            if (TMP_IMM > 32)  then
-			       CFLAG = 0;
-			       TMP_REG1 = 0;
-			    endif;
-		       endif;
-
-		   endif;
-               endif;	
+		TMP_IMM = GPR[rs]<7..0>;
+		TMP_REG1 = GPR[rd];
+		if (TMP_IMM == 0) then
+		else if (TMP_IMM < 32) then
+			TMP_IMM2 = 32 - TMP_IMM;
+			CFLAG = TMP_REG1<TMP_IMM2..TMP_IMM2>;
+			TMP_REG1 = TMP_REG1 << TMP_IMM;
+		else if (TMP_IMM == 32)  then
+			CFLAG = TMP_REG1<0..0>;
+			TMP_REG1 = 0;
+		else if (TMP_IMM > 32)  then
+			CFLAG = 0;
+			TMP_REG1 = 0;
+		endif; endif; endif; endif;	
 		NFLAG = TMP_REG1<31..31>;
 		if TMP_REG1 == 0 then 
-		   ZFLAG = 1; 
-	        else 
-		   ZFLAG = 0; 
-	        endif; 	   
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 	   
 		GPR[rd]= TMP_REG1;
-            }
+	}
 
 op LSR_thumb = LSR_imm_thumb | LSR_shr_thumb
 
 op LSR_imm_thumb( rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX, imm: IMM5)
-	syntax = format("LSR %s, %s, %s", rd.syntax, rm.syntax, imm.syntax)
-	image = format("00001%s%s%s", rm.image, rd.image, imm.image)
+	syntax = format("lsrs %s, %s, %s", rd.syntax, rm.syntax, imm.syntax)
+	image = format("00001%s%s%s", imm.image, rm.image, rd.image)
 	action = {  
-		 TMP_REG1 = GPR[rd];
-		 TMP_REG2 = GPR[rm];
-	       if (imm == 0) then
-	       	 CFLAG = TMP_REG1<31..31>;
-	         TMP_REG1 = 0;
-                else
-                   TMP_IMM = imm - 1;
-		   CFLAG = TMP_REG1<TMP_IMM..TMP_IMM>;
-		   TMP_REG1 = GPR[rm] >> imm;
-	        endif;
+		TMP_REG1 = GPR[rd];
+		TMP_REG2 = GPR[rm];
+		if (imm == 0) then
+			CFLAG = TMP_REG1<31..31>;
+			TMP_REG1 = 0;
+		else
+			TMP_IMM = imm - 1;
+			CFLAG = TMP_REG1<TMP_IMM..TMP_IMM>;
+			TMP_REG1 = GPR[rm] >> imm;
+		endif;
 		NFLAG = TMP_REG1<31..31>;
 		if TMP_REG1 == 0 then 
-		   ZFLAG = 1; 
-	        else 
-		   ZFLAG = 0; 
-	        endif; 	   
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 	   
 		GPR[rd]= TMP_REG1;
-            }
+}
 
 op LSR_shr_thumb( rd : REG_THUMB_INDEX, rs : REG_THUMB_INDEX)
-	syntax = format("LSR %s, %s", rd.syntax, rs.syntax)
+	syntax = format("lsrs %s, %s", rd.syntax, rs.syntax)
 	image = format("0100000011%s%s", rs.image, rd.image)
 	action = {  
-		 TMP_IMM = GPR[rs]<7..0>;
-		 TMP_REG1 = GPR[rd];
-	       if (TMP_IMM == 0) then
-	         else
-		   if (TMP_IMM < 32) then
-		      TMP_IMM2 =  TMP_IMM - 1;
-		      CFLAG = TMP_REG1<TMP_IMM2..TMP_IMM2>;
-		      TMP_REG1 = TMP_REG1 >> TMP_IMM;
-		      
-		   else	
-                       if (TMP_IMM == 32)  then
-		           CFLAG = TMP_REG1<31..31>;
-			   TMP_REG1 = 0;
-
-		       else 
-                            if (TMP_IMM > 32)  then
-			       CFLAG = 0;
-			       TMP_REG1 = 0;
-			    endif;
-		       endif;
-
-		   endif;
-               endif;	
+		TMP_IMM = GPR[rs]<7..0>;
+		TMP_REG1 = GPR[rd];
+		if (TMP_IMM == 0) then
+		else if (TMP_IMM < 32) then
+			TMP_IMM2 =  TMP_IMM - 1;
+			CFLAG = TMP_REG1<TMP_IMM2..TMP_IMM2>;
+			TMP_REG1 = TMP_REG1 >> TMP_IMM;
+		else if (TMP_IMM == 32)  then
+			CFLAG = TMP_REG1<31..31>;
+			TMP_REG1 = 0;
+		else if (TMP_IMM > 32)  then
+			CFLAG = 0;
+			TMP_REG1 = 0;
+		endif; endif; endif; endif;	
 		NFLAG = TMP_REG1<31..31>;
 		if TMP_REG1 == 0 then 
-		   ZFLAG = 1; 
-	        else 
-		   ZFLAG = 0; 
-	        endif; 	   
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 	   
 		GPR[rd]= TMP_REG1;
-            }
+	}
 
 op MOV_thumb = MOV_imm_thumb | MOV_shr2_thumb
-//| MOV_shr_thumb the same as ADD R%d R%d #0 
 
 op MOV_imm_thumb(rd : REG_THUMB_INDEX, imm : IMM8)
-	syntax = format("MOV %s, %s", rd.syntax, imm.syntax)
+	syntax = format("movs %s, %s", rd.syntax, imm.syntax)
 	image = format("00100%s%s", rd.image, imm.image)
 	action = {
 	     TMP_REG1 = imm;
@@ -900,35 +868,31 @@ op MOV_imm_thumb(rd : REG_THUMB_INDEX, imm : IMM8)
 	}
 
 op MOV_shr_thumb(rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX)
-	syntax = format("MOV %s, %s", rd.syntax, rn.syntax)
+	syntax = format("movs %s, %s", rd.syntax, rn.syntax)
 	image = format("0001110000%s%s", rn.image, rd.image)
 	action = {
-	     TMP_REG1 = GPR[rn];
-	     NFLAG = TMP_REG1<31..31>; 
-	     if TMP_REG1 == 0 then 
-		ZFLAG = 1; 
-	     else 
-		  ZFLAG = 0; 
-	     endif; 
-	    GPR[rd] = TMP_REG1;
-	   
+		TMP_REG1 = GPR[rn];
+		NFLAG = TMP_REG1<31..31>; 
+		if TMP_REG1 == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 
+		GPR[rd] = TMP_REG1;
 	}
 
-
-op MOV_shr2_thumb(H: u1, rd : REG_THUMB_INDEX, rm : REG_INDEX)
-	syntax = format("MOV %s, %s", rd.syntax, rm.syntax)
-	image = format("01000110%1b%s%s", H, rm.image, rd.image)
-        
+op MOV_shr2_thumb(H: u1, rd: REG_THUMB_INDEX, rm: REG_INDEX)
+	syntax = format("mov %s, %s", if H then rd.hsyntax else rd.syntax endif, rm.syntax)
+	image = format("01000110%1b%s%s", H, rm.image, rd.image)    
 	action = {
-	    Set_ARM_GPR(rd + if H == 1 then 8 else 0 endif, Get_ARM_GPR(rm));
-	   
+		Set_ARM_GPR(rd + if H == 1 then 8 else 0 endif, Get_ARM_GPR(rm));
 	}
 
 
 
 
 op MUL_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-       	syntax = format("MUL %s, %s", rd.syntax, rm.syntax)
+       	syntax = format("muls %s, %s", rd.syntax, rm.syntax)
 	image = format("0100001101%s%s", rm.image, rd.image)
 	action = {
 	       TMP_REG1 = GPR[rd];
@@ -944,7 +908,7 @@ op MUL_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
 	}
 
 op MVN_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-       	syntax = format("MVN %s, %s", rd.syntax, rm.syntax)
+       	syntax = format("mvns %s, %s", rd.syntax, rm.syntax)
 	image = format("0100001111%s%s", rm.image, rd.image)
 	action = {
 	       TMP_REG1 = ~GPR[rm];
@@ -959,7 +923,7 @@ op MVN_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
 	}
 
 op NEG_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-       	syntax = format("NEG %s, %s", rd.syntax, rm.syntax)
+       	syntax = format("negs %s, %s", rd.syntax, rm.syntax)
 	image = format("0100001001%s%s", rm.image, rd.image)
 	action = {
 	       TMP_SWORD = 0 - GPR[rm];
@@ -977,23 +941,22 @@ op NEG_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
 	}
 
 op ORR_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-       	syntax = format("ORR %s, %s", rd.syntax, rm.syntax)
+	syntax = format("orrs %s, %s", rd.syntax, rm.syntax)
 	image = format("0100001100%s%s", rm.image, rd.image)
 	action = {
-	       TMP_REG1 = GPR[rd] | GPR[rm];
-	        NFLAG = TMP_REG1<31..31>; 
-		 if TMP_REG1 == 0 then 
-		    ZFLAG = 1; 
-		 else 
-		    ZFLAG = 0; 
-		 endif; 
-		 GPR[rd] = TMP_REG1;
-	   
+		TMP_REG1 = GPR[rd] | GPR[rm];
+		NFLAG = TMP_REG1<31..31>; 
+		if TMP_REG1 == 0 then 
+			ZFLAG = 1; 
+		else 
+			ZFLAG = 0; 
+		endif; 
+		GPR[rd] = TMP_REG1;
 	}
 
 
 op POP_thumb(R: setR_T, llist: THUMB_REG_LIST)
-	syntax = format("POP {%s}", llist.syntax)
+	syntax = format("pop {%s, pc}", llist.syntax)
 	image = format("1011110%s%s", R.image, llist.image)
 	action = {  
 		// reg_list.action;
@@ -1051,7 +1014,7 @@ op POP_thumb(R: setR_T, llist: THUMB_REG_LIST)
 
 
 op PUSH_thumb(R: setR_T, llist: THUMB_REG_LIST)
-   syntax = format("PUSH {%s}", llist.syntax)
+   syntax = format("push {%s, lr}", llist.syntax)
    image = format("1011010%s%s", R.image, llist.image)
    action = {
 	  
@@ -1105,7 +1068,7 @@ op PUSH_thumb(R: setR_T, llist: THUMB_REG_LIST)
                }
 
 op ROR_thumb( rd : REG_THUMB_INDEX, rs : REG_THUMB_INDEX)
-	syntax = format("ROR %s, %s", rd.syntax, rs.syntax)
+	syntax = format("rors %s, %s", rd.syntax, rs.syntax)
 	image = format("0100000111%s%s", rs.image, rd.image)
 	action = {  
 		 TMP_IMM =  GPR[rs]<7..0>;
@@ -1137,7 +1100,7 @@ op ROR_thumb( rd : REG_THUMB_INDEX, rs : REG_THUMB_INDEX)
 
 
 op SBC_thumb( rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-   syntax = format("SBC %s, %s", rd.syntax, rm.syntax)
+   syntax = format("sbcs %s, %s", rd.syntax, rm.syntax)
    image = format("0100000110%s%s", rm.image, rd.image)
    action = {
 	        TMP_REG1 = GPR[rd];
@@ -1159,7 +1122,7 @@ op SBC_thumb( rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
 	}
 
 op STMIA_thumb(rn: REG_THUMB_INDEX, llist: THUMB_REG_LIST)
-   syntax = format("STMIA %s!, {%s}", rn.syntax, llist.syntax)
+   syntax = format("stmia %s!, {%s}", rn.syntax, llist.syntax)
    image = format("11000%s%s", rn.image, llist.image)
    action = {
 		  //reg_list.action;
@@ -1210,7 +1173,7 @@ op STMIA_thumb(rn: REG_THUMB_INDEX, llist: THUMB_REG_LIST)
 op STR_thumb = STR_imm_thumb | STR_shr_thumb | STR_imm2_thumb
 
 op STR_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
-	syntax = format("STR %s, [%s, %s * 4]", rd.syntax, rn.syntax, imm.syntax)
+	syntax = format("str %s, [%s, %s * 4]", rd.syntax, rn.syntax, imm.syntax)
 	image = format("01100%s%s%s", imm.image, rn.image, rd.image)
 	action = {
 		 TMP_START_ADDR  =  GPR[rn] + imm * 4;
@@ -1223,7 +1186,7 @@ op STR_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
                  } 
 
 op STR_shr_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-	syntax = format("STR %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
+	syntax = format("str %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
 	image = format("0101000%s%s%s", rm.image, rn.image, rd.image)
 	action = {
 		 TMP_START_ADDR  =  GPR[rn] + GPR[rm];
@@ -1239,7 +1202,7 @@ op STR_shr_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_IND
 
 
 op STR_imm2_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
-	syntax = format("STR %s, [SP, %s * 4]", rd.syntax, imm.syntax)
+	syntax = format("str %s, [SP, %s * 4]", rd.syntax, imm.syntax)
 	image = format("10010%s%s", rd.image, imm.image)
 	action = {
 	         TMP_REG1 = Get_ARM_GPR(13); // SP
@@ -1257,7 +1220,7 @@ op STR_imm2_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
 op STRB_thumb = STRB_imm_thumb | STRB_shr_thumb
 
 op STRB_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
-	syntax = format("STRB %s, [%s, %s]", rd.syntax, rn.syntax, imm.syntax)
+	syntax = format("strb %s, [%s, %s]", rd.syntax, rn.syntax, imm.syntax)
 	image = format("01110%s%s%s", imm.image, rn.image, rd.image)
 	action = {
 		 TMP_START_ADDR  =  GPR[rn] + imm ;
@@ -1266,7 +1229,7 @@ op STRB_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
                   } 
 
 op STRB_shr_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-	syntax = format("STRB %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
+	syntax = format("strb %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
 	image = format("0101010%s%s%s", rm.image, rn.image, rd.image)
 	action = {
 		  TMP_START_ADDR  =  GPR[rn] + GPR[rm];
@@ -1278,7 +1241,7 @@ op STRB_shr_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_IN
 op STRH_thumb = STRH_imm_thumb | STRH_shr_thumb
 
 op STRH_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
-	syntax = format("STRH %s, [%s, %s * 2]", rd.syntax, rn.syntax, imm.syntax)
+	syntax = format("strh %s, [%s, %s * 2]", rd.syntax, rn.syntax, imm.syntax)
 	image = format("10000%s%s%s", imm.image, rn.image, rd.image)
 	action = {
 		 TMP_START_ADDR  =  GPR[rn] + imm * 2;
@@ -1293,7 +1256,7 @@ op STRH_imm_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM5)
 
 
 op STRH_shr_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
-	syntax = format("STRH %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
+	syntax = format("strh %s, [%s, %s ]", rd.syntax, rn.syntax, rm.syntax)
 	image = format("0101001%s%s%s", rm.image, rn.image, rd.image)
 	action = {
 		 TMP_START_ADDR  =  GPR[rn] + GPR[rm];
@@ -1311,7 +1274,7 @@ op SUB_thumb =  SUB_imm1_thumb | SUB_imm2_thumb | SUB_imm3_thumb
 |  SUB_reg_thumb 
 
 op SUB_imm1_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM3)
-	syntax = format("SUB %s, %s, %s", rd.syntax, rn.syntax, imm.syntax)
+	syntax = format("subs %s, %s, %s", rd.syntax, rn.syntax, imm.syntax)
 	image = format("0001111%s%s%s", imm.image, rn.image, rd.image)
 	action = {
 	            TMP_REG1 = Get_THUMB_GPR(rd);
@@ -1331,7 +1294,7 @@ op SUB_imm1_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, imm: IMM3)
 	  	}
 
 op SUB_imm2_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
-	syntax = format("SUB %s, %s", rd.syntax,imm.syntax)
+	syntax = format("subs %s, %s", rd.syntax,imm.syntax)
 	image = format("00111%s%s", rd.image, imm.image)
 	action = {
 	            TMP_REG1 = Get_THUMB_GPR(rd);
@@ -1349,7 +1312,7 @@ op SUB_imm2_thumb( rd : REG_THUMB_INDEX, imm: IMM8)
 	  	}
 
 op SUB_reg_thumb( rd : REG_THUMB_INDEX, rn : REG_THUMB_INDEX, rm: REG_THUMB_INDEX)
-	syntax = format("SUB %s, %s, %s", rd.syntax, rn.syntax, rm.syntax)
+	syntax = format("subs %s, %s, %s", rd.syntax, rn.syntax, rm.syntax)
 	image = format("0001101%s%s%s", rm.image, rn.image, rd.image)
 	action = {
 	            TMP_REG1 = GPR[rm];
