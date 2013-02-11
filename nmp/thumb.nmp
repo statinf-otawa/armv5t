@@ -451,7 +451,7 @@ op BLX2_thumb( rm: REG_INDEX)
 
 op BX_thumb(rm : REG_INDEX)
 	syntax = format("bx %s", rm.syntax)
-	image  = format("010001110%s000", rm.image)
+	image  = format("0100 0111 0 %s 000", rm.image)
 	action = {
 		TMP_REG1 = Get_ARM_GPR(rm); 
 		TFLAG = TMP_REG1<0..0>;
@@ -956,8 +956,9 @@ op ORR_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
 
 
 op POP_thumb(R: setR_T, llist: THUMB_REG_LIST)
-	syntax = format("pop {%s, pc}", llist.syntax)
-	image = format("1011110%s%s", R.image, llist.image)
+	syntax = format("pop {%s%s}", llist.syntax,
+		if !R then "" else if llist then ", pc" else "pc" endif endif)
+	image = format("1011 110 %s%s", R.image, llist.image)
 	action = {  
 		// reg_list.action;
 		TMP_REGLIST = llist;		  
@@ -1014,7 +1015,8 @@ op POP_thumb(R: setR_T, llist: THUMB_REG_LIST)
 
 
 op PUSH_thumb(R: setR_T, llist: THUMB_REG_LIST)
-   syntax = format("push {%s, lr}", llist.syntax)
+   syntax = format("push {%s%s}", llist.syntax,
+   	if !R then "" else if llist then ", lr" else "lr" endif endif)
    image = format("1011010%s%s", R.image, llist.image)
    action = {
 	  
