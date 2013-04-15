@@ -955,10 +955,10 @@ op ORR_thumb(rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
 	}
 
 
-op POP_thumb(R: setR_T, llist: THUMB_REG_LIST)
+op POP_thumb(P: setR_T, llist: THUMB_REG_LIST)
 	syntax = format("pop {%s%s}", llist.syntax,
-		if !R then "" else if llist then ", pc" else "pc" endif endif)
-	image = format("1011 110 %s%s", R.image, llist.image)
+		if !P then "" else if llist then ", pc" else "pc" endif endif)
+	image = format("1011 110 %s%s", P.image, llist.image)
 	action = {  
 		// reg_list.action;
 		TMP_REGLIST = llist;		  
@@ -973,7 +973,7 @@ op POP_thumb(R: setR_T, llist: THUMB_REG_LIST)
 		TMP_END_ADDR = TMP_REG1 + ((R + TMP_SETBIT) * 4  ) ;
 		TMP_IMM = 0;
 		boucle;
-		if (R == 1) then
+		if (P == 1) then
 			TMP_REG2 = M[TMP_START_ADDR];
 			TMP_START_ADDR = TMP_START_ADDR + 4;
 			TBIT = TMP_REG2<0..0>;
@@ -1014,10 +1014,10 @@ op POP_thumb(R: setR_T, llist: THUMB_REG_LIST)
 	}
 
 
-op PUSH_thumb(R: setR_T, llist: THUMB_REG_LIST)
+op PUSH_thumb(P: setR_T, llist: THUMB_REG_LIST)
    syntax = format("push {%s%s}", llist.syntax,
-   	if !R then "" else if llist then ", lr" else "lr" endif endif)
-   image = format("1011010%s%s", R.image, llist.image)
+   	if !P then "" else if llist then ", lr" else "lr" endif endif)
+   image = format("1011010%s%s", P.image, llist.image)
    action = {
 	  
                   //reg_list.action;
@@ -1032,7 +1032,7 @@ op PUSH_thumb(R: setR_T, llist: THUMB_REG_LIST)
 		  TMP_END_ADDR = TMP_START_ADDR ;
                   TMP_IMM = 0;
                   boucle;
-		  if (R == 1) then
+		  if (P == 1) then
 		     TMP_REG2 = Get_ARM_GPR(14);
 		     M[TMP_START_ADDR] = TMP_REG2;
 		     TMP_START_ADDR = TMP_START_ADDR + 4;
