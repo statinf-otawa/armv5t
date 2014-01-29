@@ -93,7 +93,7 @@ mode IMM24(n: s24) = n
 
 
 mode OFFSET_12(n: u12) = n
-	syntax = format("#%d", n)
+	syntax = format("%d", n)
 	image = format("%12b", n)
 
 
