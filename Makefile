@@ -17,12 +17,8 @@
 
 # configuration
 GLISS_PREFIX	= ../gliss2
-WITH_EABI		= 1	# comment it to enable EABI support (no system call)
-WITH_DISASM		= 1	# comment it to prevent disassembler building
-WITH_SIM		= 1	# comment it to prevent simulator building
-WITH_THUMB		= 1	# comment it to prevent use of THUMB mode
-WITH_DYNLIB		= 1 # uncomment it to link in dynamic library
-WITH_IO			= 1	# uncomment it to use IO memory (slower but allowing callback)
+
+-include config.mk
 
 # definitions
 ARCH=arm
@@ -115,6 +111,9 @@ ifdef WITH_THUMB
 	echo "#define ARM_THUMB" >> $@
 	echo "#define ARM_THUMB_1" >> $@
 endif
+ifdef WITH_MEM_SPY
+	echo "#define ARM_MEM_SPY" >> $@
+endif
 
 src/disasm.c: arm.irg
 	$(GLISS_PREFIX)/gep/gliss-disasm $(ARCH).irg -o $@ -c
@@ -130,3 +129,6 @@ clean:
 
 distclean:
 	rm -Rf $(DISTCLEAN) arm.irg arm.out
+
+config.mk:
+	cp default.mk config.mk
