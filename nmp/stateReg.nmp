@@ -46,7 +46,7 @@ let offset_irq	= 23
 let offset_svc 	= 25
 let offset_abt	= 27
 let offset_und	= 29
-macro reg_id(m, i) = coerce(card(8), (((m) << 4) | (i)))
+macro reg_id(m, i) = ((coerce(card(8), m) << 4) | (i))
 
 macro reg_offset(i) = \
 	switch(reg_id(MBITS, i)) { \
@@ -68,8 +68,8 @@ macro reg_offset(i) = \
 	default: 0 \
 	}
 
-macro Get_ARM_GPR(r) = GPR[r + reg_offset(r)]
-macro Set_ARM_GPR(r, v) = if r == 15 then NPC = v; else GPR[r + reg_offset(r)] = v; endif
+macro Get_ARM_GPR(r) = GPR[coerce(card(8), r) + reg_offset(r)]
+macro Set_ARM_GPR(r, v) = if r == 15 then NPC = v; else GPR[coerce(card(8), r) + reg_offset(r)] = v; endif
 
 
 
