@@ -63,7 +63,8 @@ NMP = \
 	nmp/simpleType.nmp \
 	nmp/stateReg.nmp \
 	nmp/system.nmp \
-	nmp/tempVar.nmp
+	nmp/tempVar.nmp \
+	nmp/coproc.nmp
 ifdef WITH_THUMB
 NMP += nmp/thumb.nmp
 endif
