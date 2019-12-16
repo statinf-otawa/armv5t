@@ -493,8 +493,8 @@ op CMP_imm_thumb(rn : REG_THUMB_INDEX, imm : IMM8)
 		else
 			ZFLAG = 0;
 		endif;
-		CFLAG =  CarryFromSub(TMP_REG1,imm,Temp);
-		VFLAG =  OverflowFromSub(TMP_REG1,imm,Temp);
+		CFLAG =  CarryFromSub(TMP_REG1, coerce(card(32), imm),Temp);
+		VFLAG =  OverflowFromSub(TMP_REG1, coerce(card(32), imm), Temp);
 	}
 
 op CMP_shr1_thumb(rn : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
@@ -1117,8 +1117,8 @@ op SBC_thumb( rd : REG_THUMB_INDEX, rm : REG_THUMB_INDEX)
 		 ZFLAG = 0;
 		 endif;
 // a revoir \
-	      CFLAG =  ! CarryFromSub(TMP_REG1,TMP_REG1, TMP_BIT);
-	      VFLAG = OverflowFromSub(TMP_REG1,TMP_REG1,TMP_BIT);
+	      CFLAG =  ! CarryFromSub(TMP_REG1, TMP_REG1, TMP_REG1);
+	      VFLAG = OverflowFromSub(TMP_REG1, TMP_REG1, TMP_REG1);
 
 
 	}
