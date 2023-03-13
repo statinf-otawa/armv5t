@@ -78,6 +78,7 @@ reg Ucpsr [1, u32]
 	debug = 1
 	label = "CPSR"
 	fmt = "CPSR"
+	validate = 1
 reg CPSR [1, u32] alias = Ucpsr
 
 
@@ -167,10 +168,11 @@ reg RBIT[1,u1]
 reg R[16, u32]
 	alias = GPR[0]
 	debug = 1
-	label = "Registers"
+	label = "R"
 	fmt = "R%d"
 	get = { "GLISS_GET_I"(Get_ARM_GPR("GLISS_IDX"));  }
 	set = { Set_ARM_GPR("GLISS_IDX", "GLISS_I");  }
+	validate = 1
 
 
 // initialisation

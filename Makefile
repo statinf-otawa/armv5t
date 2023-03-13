@@ -89,6 +89,12 @@ SUBDIRS		+=	sim
 DISTCLEAN	+=	sim
 endif
 
+ifdef WITH_PYTHON
+GOALS		+= arm-python
+GFLAGS 		+= -python
+endif
+
+
 
 # rules
 all: lib $(GOALS)
@@ -124,6 +130,9 @@ src/used_regs.c: $(ARCH).irg nmp/used_regs.nmp
 
 arm-sim:
 	cd sim; make
+
+arm-python:
+	cd python; $(PYTHON) setup.py build
 
 clean:
 	rm -rf $(CLEAN)
