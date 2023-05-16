@@ -5,3 +5,5 @@ WITH_THUMB		= 1	# comment it to prevent use of THUMB mode
 WITH_DYNLIB		= 1 # uncomment it to link in dynamic library
 #WITH_IO			= 1	# uncomment it to use IO memory (slower but allowing callback)
 #WITH_MEM_SPY	= 1	# activate memory spy callback
+#WITH_PYTHON	= 1	# build Python interface
+#PYTHON			= python3
